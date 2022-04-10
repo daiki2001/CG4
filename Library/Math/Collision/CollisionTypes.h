@@ -1,0 +1,11 @@
+#pragma once
+
+namespace Collision
+{
+enum ShapeType
+{
+	SHAPE_UNKNOWN = -1, //å`èÛñ¢ê›íË
+
+	SHAPE_SPHERE //ãÖ
+};
+} //Collision
