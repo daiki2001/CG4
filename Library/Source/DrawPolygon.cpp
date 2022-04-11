@@ -530,7 +530,7 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 
 	bool isFaceStart = false;
 	size_t verticesCount = 0;
-	int objectsCount = obj.size();
+	int objectsCount = static_cast<int>(obj.size());
 
 	Object* parent = nullptr;
 
@@ -612,7 +612,7 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 
 					// 頂点データの追加
 					Vertex vertex{};
-					vertex.pos = positions[indexPos - 1];
+					vertex.pos = positions[indexPos - 1Ui64];
 					vertex.normal = XMFLOAT3();
 					vertex.uv = XMFLOAT2();
 					vert.vertices.emplace_back(vertex);
@@ -627,9 +627,9 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 
 					// 頂点データの追加
 					Vertex vertex{};
-					vertex.pos = positions[indexPos - 1];
-					vertex.normal = normals[indexNormal - 1];
-					vertex.uv = texcoords[indexUv - 1];
+					vertex.pos = positions[indexPos - 1Ui64];
+					vertex.normal = normals[indexNormal - 1Ui64];
+					vertex.uv = texcoords[indexUv - 1Ui64];
 					vert.vertices.emplace_back(vertex);
 				}
 
@@ -1213,7 +1213,7 @@ int DrawPolygon::DrawOBJ(const int& object, const XMFLOAT3& position, const XMMA
 
 	IndexData& index = objIndex[polygonCount];
 
-	for (int i = parentIndex; i <= object; i++)
+	for (int i = static_cast<int>(parentIndex); i <= object; i++)
 	{
 		if (i == parentIndex)
 		{
@@ -1260,7 +1260,7 @@ int DrawPolygon::DrawOBJ(const int& object, const XMFLOAT3& position, const XMMA
 	w->cmdList->SetPipelineState(materialData[isDepthWriteBan].pipelinestate[blendMode].Get());
 	w->cmdList->SetGraphicsRootSignature(materialData[isDepthWriteBan].rootsignature.Get());
 
-	for (int i = parentIndex; i <= object; i++)
+	for (int i = static_cast<int>(parentIndex); i <= object; i++)
 	{
 		ConstBufferData* constMap = nullptr;
 		obj[index.constant].constBuff->Map(0, nullptr, (void**)&constMap); //マッピング
@@ -1299,7 +1299,7 @@ int DrawPolygon::DrawOBJ(const int& object, const XMFLOAT3& position, const XMMA
 		w->cmdList->DrawIndexedInstanced((UINT)vertices[obj[i].polygonData].indices.size(), 1, 0, 0, 0);
 	}
 
-	return parentIndex;
+	return static_cast<int>(parentIndex);
 }
 
 int DrawPolygon::CreateCamera(const XMFLOAT3& cameraPos, const XMFLOAT3& cameraTarget, const XMFLOAT3& upVector)
@@ -1380,7 +1380,7 @@ void DrawPolygon::PolygonLoopEnd()
 
 	TextLoopEnd();
 
-	polygonCount = objModelCount - 1;
+	polygonCount = static_cast<int>(objModelCount) - 1;
 }
 
 void DrawPolygon::DataClear()

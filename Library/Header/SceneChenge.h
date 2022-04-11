@@ -5,9 +5,6 @@ class SceneChenger
 public: // サブクラス
 	enum Scene
 	{
-		Title,
-		GameMain,
-		GameOver,
 		Test
 	};
 

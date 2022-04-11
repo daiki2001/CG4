@@ -17,7 +17,7 @@ Audio::~Audio()
 
 	for (size_t i = 0; i < soundDatas.size(); i++)
 	{
-		SoundUnload(i);
+		SoundUnload(static_cast<const int>(i));
 	}
 }
 
@@ -57,7 +57,7 @@ int Audio::SoundLoadWave(const char* filePath)
 	}
 
 	// RIFFヘッダーの読み込み
-	Audio::RiffHeader riff;
+	Audio::RiffHeader riff = {};
 	file.read((char*)&riff, sizeof(riff));
 	// ファイルがRIFFかチェック
 	if (strncmp(riff.chunk.id, "RIFF", 4) != 0)
@@ -85,7 +85,7 @@ int Audio::SoundLoadWave(const char* filePath)
 	file.read((char*)&format.fmt, format.chunk.size);
 
 	// Dataチャンクの読み込み
-	Audio::Chunk data;
+	Audio::Chunk data = {};
 	file.read((char*)&data, sizeof(data));
 	// JUNKチャンクかLISTチャンクを検出した場合
 	if (strncmp(data.id, "JUNK", 4) == 0 || strncmp(data.id, "LIST", 4) == 0)
@@ -115,7 +115,7 @@ int Audio::SoundLoadWave(const char* filePath)
 	soundDatas[soundDatas.size() - 1].pBuffer = reinterpret_cast<BYTE*>(pBuffer);
 	soundDatas[soundDatas.size() - 1].bufferSize = data.size;
 
-	return soundDatas.size() - 1;
+	return static_cast<int>(soundDatas.size()) - 1;
 }
 
 void Audio::SoundPlayWave(const int& soundData)

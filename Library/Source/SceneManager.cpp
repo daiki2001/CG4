@@ -1,7 +1,4 @@
 #include "./Header/Scenemanager.h"
-#include "../Header/TitleScene.h"
-#include "../Header/GameScene.h"
-#include "../Header/GameOverScene.h"
 #include "../Header/TestScene.h"
 #include "./Header/Error.h"
 
@@ -30,15 +27,6 @@ void SceneManager::SceneChenge(const SceneManager::Scene scene, const bool stack
 
 	switch (scene)
 	{
-	case SceneManager::Scene::Title:
-		sceneStack.push(make_shared<TitleScene>(this));
-		break;
-	case SceneManager::Scene::GameMain:
-		sceneStack.push(make_shared<GameScene>(this));
-		break;
-	case SceneManager::Scene::GameOver:
-		sceneStack.push(make_shared<GameOverScene>(this));
-		break;
 	case SceneManager::Scene::Test:
 		sceneStack.push(make_shared<TestScene>(this));
 		break;
