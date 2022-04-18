@@ -21,6 +21,7 @@ const float TestScene::triangleScale = 10.0f;
 
 TestScene::TestScene(SceneChenger* sceneChenger) :
 	BaseScene(sceneChenger),
+	fbxLoader(FbxLoader::GetInstance()),
 	background(-1),
 	sphere(-1),
 	plane(-1),
@@ -54,10 +55,18 @@ TestScene::TestScene(SceneChenger* sceneChenger) :
 	Init();
 }
 
+TestScene::~TestScene()
+{
+	fbxLoader->Finalize();
+}
+
 void TestScene::Init()
 {
 	using namespace DirectX;
 	using namespace EngineMath;
+
+	fbxLoader->Init();
+	fbxLoader->LoadModelFromFile("./Resources/cube/cube.fbx");
 
 	// ‰æ‘œ‚Ì“Ç‚İ‚İ
 	background = draw.LoadTextrue(L"./Resources/background.png");

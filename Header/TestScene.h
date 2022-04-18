@@ -3,6 +3,7 @@
 #include "./Math/EngineMath.h"
 #include "./Math/Collision/Collision.h"
 #include "Player.h"
+#include "./Header/FbxLoader.h"
 
 class TestScene : public BaseScene
 {
@@ -27,12 +28,15 @@ public: // 定数
 
 public: // メンバ関数
 	TestScene(SceneChenger* sceneChenger);
+	~TestScene() override;
 
 	void Init() override;
 	void Update() override;
 	void Draw() override;
 
 private: // メンバ変数
+	FbxLoader* fbxLoader;
+
 	int background; //背景画像
 
 	// オブジェクトの生成

@@ -7,7 +7,7 @@ class BaseScene
 public:
 	BaseScene() = delete;
 	BaseScene(SceneChenger* sceneChenger);
-	~BaseScene();
+	virtual ~BaseScene();
 
 	virtual void Init() = 0;
 	virtual void Update() = 0;
