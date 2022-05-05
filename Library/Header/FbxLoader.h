@@ -4,6 +4,7 @@
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <string>
+#include "Model.h"
 
 class FbxLoader
 {
@@ -36,8 +37,11 @@ public: // メンバ関数
 	// 終了処理
 	void Finalize();
 
-	//ファイルからFBXモデル読み込み
+	// ファイルからFBXモデル読み込み
 	void LoadModelFromFile(const string& modelPath);
+
+	// 再帰的にノード構成を解析
+	void ParseNodeRecursive(Model* model, FbxNode* fbxNode, Node* parent = nullptr);
 
 private: // メンバ変数
 	ID3D12Device* device = nullptr; //D3D12デバイス

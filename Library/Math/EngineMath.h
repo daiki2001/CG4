@@ -9,7 +9,9 @@
 /*定数*/
 namespace EngineMath
 {
-static const float radian = DirectX::XM_PI / 180.0f;
+static constexpr float degree = DirectX::XM_PI / 180.0f; //1°
+
+static constexpr float gravity = 9.8f; //重力加速度
 } //EngineMath
 
 /*オペレーター演算子オーバーロード*/

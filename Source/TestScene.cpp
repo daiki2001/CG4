@@ -83,8 +83,8 @@ void TestScene::Init()
 	//draw.Tiring(plane, 50.0f, 50.0f);
 
 	Camera::targetRadius = 150.0f;
-	Camera::longitude = radian * (-90.0f);
-	Camera::latitude = radian * (0.0f);
+	Camera::longitude = degree * (-90.0f);
+	Camera::latitude = degree * (0.0f);
 
 	Camera::pos = {};
 	Camera::target = { 0.0f, 50.0f, 0.0f };
@@ -168,34 +168,34 @@ void TestScene::Update()
 	{
 		if (Input::IsKey(DIK_LEFT))
 		{
-			rayAngle.y -= radian;
-			if (rayAngle.y <= radian * 0.0)
+			rayAngle.y -= degree;
+			if (rayAngle.y <= degree * 0.0)
 			{
-				rayAngle.y += radian * 360.0f;
+				rayAngle.y += degree * 360.0f;
 			}
 		}
 		if (Input::IsKey(DIK_RIGHT))
 		{
-			rayAngle.y += radian;
-			if (rayAngle.y >= radian * 360.0f)
+			rayAngle.y += degree;
+			if (rayAngle.y >= degree * 360.0f)
 			{
-				rayAngle.y -= radian * 360.0f - radian;
+				rayAngle.y -= degree * 360.0f - degree;
 			}
 		}
 		if (Input::IsKey(DIK_UP))
 		{
-			rayAngle.x += radian;
-			if (rayAngle.x >= radian * 360.0f)
+			rayAngle.x += degree;
+			if (rayAngle.x >= degree * 360.0f)
 			{
-				rayAngle.x -= radian * 360.0f - radian;
+				rayAngle.x -= degree * 360.0f - degree;
 			}
 		}
 		if (Input::IsKey(DIK_DOWN))
 		{
-			rayAngle.x -= radian;
-			if (rayAngle.x <= radian * 0.0)
+			rayAngle.x -= degree;
+			if (rayAngle.x <= degree * 0.0)
 			{
-				rayAngle.x += radian * 360.0f;
+				rayAngle.x += degree * 360.0f;
 			}
 		}
 
@@ -227,34 +227,34 @@ void TestScene::Update()
 
 	if (Input::IsKey(DIK_A))
 	{
-		Camera::longitude -= radian;
-		if (Camera::longitude <= radian * 0.0)
+		Camera::longitude -= degree;
+		if (Camera::longitude <= degree * 0.0)
 		{
-			Camera::longitude += radian * 360;
+			Camera::longitude += degree * 360;
 		}
 	}
 	if (Input::IsKey(DIK_D))
 	{
-		Camera::longitude += radian;
-		if (Camera::longitude >= radian * 360.0)
+		Camera::longitude += degree;
+		if (Camera::longitude >= degree * 360.0)
 		{
-			Camera::longitude -= radian * 360;
+			Camera::longitude -= degree * 360;
 		}
 	}
 	if (Input::IsKey(DIK_W))
 	{
-		Camera::latitude += radian;
-		if (Camera::latitude >= radian * 90.0f)
+		Camera::latitude += degree;
+		if (Camera::latitude >= degree * 90.0f)
 		{
-			Camera::latitude = radian * 90.0f - radian;
+			Camera::latitude = degree * 90.0f - degree;
 		}
 	}
 	if (Input::IsKey(DIK_S))
 	{
-		Camera::latitude -= radian;
-		if (Camera::latitude <= radian * -90.0f)
+		Camera::latitude -= degree;
+		if (Camera::latitude <= degree * -90.0f)
 		{
-			Camera::latitude = -(radian * 90.0f - radian);
+			Camera::latitude = -(degree * 90.0f - degree);
 		}
 	}
 

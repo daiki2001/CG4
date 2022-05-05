@@ -1,8 +1,8 @@
 #include "./Header/Camera.h"
 
 float Camera::targetRadius = 150.0f;
-float Camera::longitude = EngineMath::radian * (-90.0f);
-float Camera::latitude = EngineMath::radian * (0.0f);
+float Camera::longitude = EngineMath::degree * (-90.0f);
+float Camera::latitude = EngineMath::degree * (0.0f);
 
 EngineMath::Vector3 Camera::pos = {};
 EngineMath::Vector3 Camera::target = { 0.0f, 50.0f, 0.0f };
