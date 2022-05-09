@@ -4,9 +4,9 @@
 
 const float TestScene::sphereRadius = 10.0f;
 const float TestScene::planeRadius = 10.0f;
-const EngineMath::Vector3 TestScene::tPos1 = { -1.0f, -1.0f, 0.0f };
-const EngineMath::Vector3 TestScene::tPos2 = { 0.0f, 1.0f, 0.0f };
-const EngineMath::Vector3 TestScene::tPos3 = { 1.0f, -1.0f, 0.0f };
+const EngineMath::Vector3 TestScene::tPos1 = {-1.0f, -1.0f, 0.0f};
+const EngineMath::Vector3 TestScene::tPos2 = {0.0f, 1.0f, 0.0f};
+const EngineMath::Vector3 TestScene::tPos3 = {1.0f, -1.0f, 0.0f};
 
 const DirectX::XMFLOAT4 TestScene::color[3] = {
 		{ 1.0f, 1.0f, 1.0f, 1.0f }, //当たって無い時の色
@@ -76,7 +76,7 @@ void TestScene::Init()
 	player->SetModel(sphere);
 	plane = draw.CreateCircle(planeRadius, 32);
 	triangle = draw.CreateTriangle(
-		tPos1, { 0.0f, 1.0f }, tPos2, { 0.5f, 0.0f }, tPos3, { 1.0f, 1.0f });
+		tPos1, {0.0f, 1.0f}, tPos2, {0.5f, 0.0f}, tPos3, {1.0f, 1.0f});
 	ray = draw.CreateCylinder(0.125f, sphereRadius, 4);
 
 	// タイリング
@@ -87,8 +87,8 @@ void TestScene::Init()
 	Camera::latitude = degree * (0.0f);
 
 	Camera::pos = {};
-	Camera::target = { 0.0f, 50.0f, 0.0f };
-	Camera::upVec = { 0.0f, 1.0f, 0.0f };
+	Camera::target = {0.0f, 50.0f, 0.0f};
+	Camera::upVec = {0.0f, 1.0f, 0.0f};
 
 	playerPos = Camera::target;
 
@@ -98,9 +98,9 @@ void TestScene::Init()
 	rayRot = XMMatrixIdentity();
 	rayDistance = 0.0f;
 
-	spherePos = { 50.0f, 50.0f, 0.0f };
+	spherePos = {50.0f, 50.0f, 0.0f};
 
-	planePos = { 0.0f, -50.0f, 0.0f };
+	planePos = {0.0f, -50.0f, 0.0f};
 	planeRot = XMMatrixRotationX(XMConvertToRadians(90.0f));
 	planeScale = 100.0f;
 	planeToRayHitPos = Vector3();
@@ -424,26 +424,26 @@ void TestScene::Draw()
 
 	if (isRay)
 	{
-		draw.DrawString(0.0f, 0.0f, 1.5f, { 0.0f, 0.0f, 0.0f, 1.0f }, "collision:ray");
+		draw.DrawString(0.0f, 0.0f, 1.5f, {0.0f, 0.0f, 0.0f, 1.0f}, "collision:ray");
 		if (isCameraMove)
 		{
-			draw.DrawString(0.0f, 32.0f, 1.5f, { 0.0f, 0.0f, 0.0f, 1.0f }, "Move:camera translation");
+			draw.DrawString(0.0f, 32.0f, 1.5f, {0.0f, 0.0f, 0.0f, 1.0f}, "Move:camera translation");
 		}
 		else
 		{
-			draw.DrawString(0.0f, 32.0f, 1.5f, { 0.0f, 0.0f, 0.0f, 1.0f }, "Move:ray");
+			draw.DrawString(0.0f, 32.0f, 1.5f, {0.0f, 0.0f, 0.0f, 1.0f}, "Move:ray");
 		}
 	}
 	else
 	{
-		draw.DrawString(0.0f, 0.0f, 1.5f, { 0.0f, 0.0f, 0.0f, 1.0f }, "collision:object");
+		draw.DrawString(0.0f, 0.0f, 1.5f, {0.0f, 0.0f, 0.0f, 1.0f}, "collision:object");
 		if (isCameraMove)
 		{
-			draw.DrawString(0.0f, 32.0f, 1.5f, { 0.0f, 0.0f, 0.0f, 1.0f }, "Move:camera translation");
+			draw.DrawString(0.0f, 32.0f, 1.5f, {0.0f, 0.0f, 0.0f, 1.0f}, "Move:camera translation");
 		}
 		else
 		{
-			draw.DrawString(0.0f, 32.0f, 1.5f, { 0.0f, 0.0f, 0.0f, 1.0f }, "Move:object");
+			draw.DrawString(0.0f, 32.0f, 1.5f, {0.0f, 0.0f, 0.0f, 1.0f}, "Move:object");
 		}
 	}
 
