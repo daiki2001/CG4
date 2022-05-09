@@ -186,6 +186,7 @@
     <ClInclude Include="Header\DirectInput.h" />
     <ClInclude Include="Header\DirectXInit.h" />
     <ClInclude Include="Header\DrawPolygon.h" />
+    <ClInclude Include="Header\EngineGeneral.h" />
     <ClInclude Include="Header\Error.h" />
     <ClInclude Include="Header\FbxLoader.h" />
     <ClInclude Include="Header\Input.h" />
@@ -227,6 +228,7 @@
     <ClCompile Include="Source\DirectInput.cpp" />
     <ClCompile Include="Source\DirectXInit.cpp" />
     <ClCompile Include="Source\DrawPolygon.cpp" />
+    <ClCompile Include="Source\EngineGeneral.cpp" />
     <ClCompile Include="Source\FbxLoader.cpp" />
     <ClCompile Include="Source\Input.cpp" />
     <ClCompile Include="Source\LoadTex.cpp" />

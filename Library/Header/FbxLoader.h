@@ -29,7 +29,6 @@ private: // エイリアス
 	using string = std::string;
 
 public: // 定数
-	//static const string baseDirectory;
 
 public: // メンバ関数
 	// 初期化
@@ -39,9 +38,20 @@ public: // メンバ関数
 
 	// ファイルからFBXモデル読み込み
 	void LoadModelFromFile(const string& modelPath);
-
+private:
 	// 再帰的にノード構成を解析
 	void ParseNodeRecursive(Model* model, FbxNode* fbxNode, Node* parent = nullptr);
+	// メッシュ読み取り
+	void ParseMesh(Model* model, FbxNode* fbxNode);
+
+	// 頂点座標読み取り
+	void ParseMeshVertices(Model* model, FbxMesh* fbxMesh);
+	// 面情報読み取り
+	void ParseMeshFaces(Model* model, FbxMesh* fbxMesh);
+	// マテリアル読み取り
+	void ParseMaterial(Model* model, FbxNode* fbxNode);
+	// テクスチャ読み取り
+	void LoadTexture(Model* model, const string& fullpath);
 
 private: // メンバ変数
 	ID3D12Device* device = nullptr; //D3D12デバイス
