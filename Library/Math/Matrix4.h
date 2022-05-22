@@ -2,7 +2,9 @@
 #include <DirectXMath.h>
 #include "Vector3.h"
 
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 // DirectX::XMMATRIX 型を Matrix4 型として扱う ※互換性の確保&拡張のため
 using Matrix4 = DirectX::XMMATRIX;
@@ -29,4 +31,5 @@ Vector3 transform(const Vector3& v, const Matrix4& m);
 
 // 2項演算子オーバーロード
 Vector3 operator * (const Vector3& v, const Matrix4& m);
-} //EngineMath
+} //Math
+} //Engine

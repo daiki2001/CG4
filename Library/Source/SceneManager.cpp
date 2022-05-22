@@ -31,7 +31,7 @@ void SceneManager::SceneChenge(const SceneManager::Scene scene, const bool stack
 		sceneStack.push(make_shared<TestScene>(this));
 		break;
 	default:
-		ErrorLog("存在しないシーンが呼ばれました\n", true);
+		Engine::ErrorLog("存在しないシーンが呼ばれました\n", true);
 		break;
 	}
 }

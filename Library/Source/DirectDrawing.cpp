@@ -1,4 +1,5 @@
 #include "./Header/DirectDrawing.h"
+#include "./Header/DirectXInit.h"
 #include <string>
 #include "./Math/Collision/BaseCollider.h"
 #include "./Math/Collision/CollisionManager.h"
@@ -65,6 +66,8 @@ void Object::SetCollider(BaseCollider* collider)
 }
 
 /*static変数の初期化*/
+ID3D12Device* DirectDrawing::dev = DirectXInit::GetDevice();
+ID3D12GraphicsCommandList* DirectDrawing::cmdList = DirectXInit::GetCommandList();
 CommonData DirectDrawing::spriteData = {};
 DirectDrawing::vector<Sprite> DirectDrawing::sprite = {};
 DirectDrawing::vector<DirectDrawing::IndexData> DirectDrawing::spriteIndex = {};
@@ -81,8 +84,7 @@ void DirectDrawing::DataClear()
 	objSubset.clear();
 }
 
-DirectDrawing::DirectDrawing(const DirectXInit* w) :
-	w(w),
+DirectDrawing::DirectDrawing() :
 	vertices{},
 	vertMap(nullptr),
 	obj{},
@@ -99,8 +101,8 @@ DirectDrawing::DirectDrawing(const DirectXInit* w) :
 {
 	using namespace DirectX;
 
-	float winW = (float)w->windowWidth;
-	float winH = (float)w->windowHeight;
+	float winW = static_cast<float>(DirectXInit::GetInstance()->windowWidth);
+	float winH = static_cast<float>(DirectXInit::GetInstance()->windowHeight);
 
 	for (size_t i = 0; i < sizeof(objectData) / sizeof(objectData[0]); i++)
 	{
@@ -133,6 +135,8 @@ DirectDrawing::~DirectDrawing()
 HRESULT DirectDrawing::Init()
 {
 	HRESULT hr = S_FALSE;
+
+	dev = DirectXInit::GetDevice();
 
 	hr = DrawingInit();
 	if (FAILED(hr))
@@ -180,14 +184,15 @@ HRESULT DirectDrawing::DrawingInit()
 		&vsBlob,
 		&errorBlob);
 
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		// errorBlobからエラー内容をstring型にコピー
 		std::string errstr;
 		errstr.resize(errorBlob->GetBufferSize());
 
 		std::copy_n((char*)errorBlob->GetBufferPointer(),
-			errorBlob->GetBufferSize(),
-			errstr.begin());
+					errorBlob->GetBufferSize(),
+					errstr.begin());
 		errstr += "\n";
 		// エラー内容を出力ウィンドウに表示
 		OutputDebugStringA(errstr.c_str());
@@ -206,14 +211,15 @@ HRESULT DirectDrawing::DrawingInit()
 		&psBlob,
 		&errorBlob);
 
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		// errorBlobからエラー内容をstring型にコピー
 		std::string errstr;
 		errstr.resize(errorBlob->GetBufferSize());
 
 		std::copy_n((char*)errorBlob->GetBufferPointer(),
-			errorBlob->GetBufferSize(),
-			errstr.begin());
+					errorBlob->GetBufferSize(),
+					errstr.begin());
 		errstr += "\n";
 		// エラー内容を出力ウィンドウに表示
 		OutputDebugStringA(errstr.c_str());
@@ -255,7 +261,7 @@ HRESULT DirectDrawing::DrawingInit()
 	};
 
 	// デスクリプタテーブルの設定
-	CD3DX12_DESCRIPTOR_RANGE descRangeSRV; //デスクリプタテーブルの設定(シェーダリソース)
+	CD3DX12_DESCRIPTOR_RANGE descRangeSRV = {}; //デスクリプタテーブルの設定(シェーダリソース)
 	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
 	// ルートパラメータの設定
@@ -265,7 +271,7 @@ HRESULT DirectDrawing::DrawingInit()
 
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
 
-	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 	rootSignatureDesc.Init_1_0(
 		_countof(rootparams),
 		rootparams,
@@ -287,7 +293,7 @@ HRESULT DirectDrawing::DrawingInit()
 
 	for (size_t i = 0; i < sizeof(objectData) / sizeof(objectData[0]); i++)
 	{
-		hr = w->dev->CreateRootSignature(
+		hr = dev->CreateRootSignature(
 			0,
 			rootSigBlob->GetBufferPointer(),
 			rootSigBlob->GetBufferSize(),
@@ -348,7 +354,7 @@ HRESULT DirectDrawing::DrawingInit()
 				blendDesc.DestBlend = D3D12_BLEND_ZERO;          //使わない
 				goto BaseBlendState;
 			default:
-			BaseBlendState:
+BaseBlendState:
 				/*共通設定*/
 				blendDesc.BlendEnable = true;                //ブレンドを有効にする
 				blendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD; //加算
@@ -376,7 +382,7 @@ HRESULT DirectDrawing::DrawingInit()
 			// パイプラインにルートシグネチャをセット
 			gpipeline.pRootSignature = objectData[i].rootsignature.Get();
 
-			hr = w->dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&objectData[i].pipelinestate[j]));
+			hr = dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&objectData[i].pipelinestate[j]));
 		}
 	}
 
@@ -406,14 +412,15 @@ HRESULT DirectDrawing::MaterialInit()
 		&vsBlob,
 		&errorBlob);
 
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		// errorBlobからエラー内容をstring型にコピー
 		std::string errstr;
 		errstr.resize(errorBlob->GetBufferSize());
 
 		std::copy_n((char*)errorBlob->GetBufferPointer(),
-			errorBlob->GetBufferSize(),
-			errstr.begin());
+					errorBlob->GetBufferSize(),
+					errstr.begin());
 		errstr += "\n";
 		// エラー内容を出力ウィンドウに表示
 		OutputDebugStringA(errstr.c_str());
@@ -432,14 +439,15 @@ HRESULT DirectDrawing::MaterialInit()
 		&psBlob,
 		&errorBlob);
 
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		// errorBlobからエラー内容をstring型にコピー
 		std::string errstr;
 		errstr.resize(errorBlob->GetBufferSize());
 
 		std::copy_n((char*)errorBlob->GetBufferPointer(),
-			errorBlob->GetBufferSize(),
-			errstr.begin());
+					errorBlob->GetBufferSize(),
+					errstr.begin());
 		errstr += "\n";
 		// エラー内容を出力ウィンドウに表示
 		OutputDebugStringA(errstr.c_str());
@@ -481,7 +489,7 @@ HRESULT DirectDrawing::MaterialInit()
 	};
 
 	// デスクリプタテーブルの設定
-	CD3DX12_DESCRIPTOR_RANGE descRangeSRV; //デスクリプタテーブルの設定(シェーダリソース)
+	CD3DX12_DESCRIPTOR_RANGE descRangeSRV = {}; //デスクリプタテーブルの設定(シェーダリソース)
 	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
 	// ルートパラメータの設定
@@ -492,7 +500,7 @@ HRESULT DirectDrawing::MaterialInit()
 
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
 
-	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 	rootSignatureDesc.Init_1_0(
 		_countof(rootparams),
 		rootparams,
@@ -515,7 +523,7 @@ HRESULT DirectDrawing::MaterialInit()
 
 	for (size_t i = 0; i < sizeof(materialData) / sizeof(materialData[0]); i++)
 	{
-		hr = w->dev->CreateRootSignature(
+		hr = dev->CreateRootSignature(
 			0,
 			rootSigBlob->GetBufferPointer(),
 			rootSigBlob->GetBufferSize(),
@@ -576,7 +584,7 @@ HRESULT DirectDrawing::MaterialInit()
 				materialBlendDesc.DestBlend = D3D12_BLEND_ZERO;          //使わない
 				goto MaterialBaseBlend;
 			default:
-			MaterialBaseBlend:
+MaterialBaseBlend:
 				/*共通設定*/
 				materialBlendDesc.BlendEnable = true;                //ブレンドを有効にする
 				materialBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD; //加算
@@ -605,7 +613,7 @@ HRESULT DirectDrawing::MaterialInit()
 			// パイプラインにルートシグネチャをセット
 			materialPipeline.pRootSignature = materialData[i].rootsignature.Get();
 
-			hr = w->dev->CreateGraphicsPipelineState(&materialPipeline, IID_PPV_ARGS(&materialData[i].pipelinestate[j]));
+			hr = dev->CreateGraphicsPipelineState(&materialPipeline, IID_PPV_ARGS(&materialData[i].pipelinestate[j]));
 		}
 	}
 
@@ -635,14 +643,15 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 		&vsBlob,
 		&errorBlob);
 
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		// errorBlobからエラー内容をstring型にコピー
 		std::string errstr;
 		errstr.resize(errorBlob->GetBufferSize());
 
 		std::copy_n((char*)errorBlob->GetBufferPointer(),
-			errorBlob->GetBufferSize(),
-			errstr.begin());
+					errorBlob->GetBufferSize(),
+					errstr.begin());
 		errstr += "\n";
 		// エラー内容を出力ウィンドウに表示
 		OutputDebugStringA(errstr.c_str());
@@ -661,14 +670,15 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 		&psBlob,
 		&errorBlob);
 
-	if (FAILED(hr)) {
+	if (FAILED(hr))
+	{
 		// errorBlobからエラー内容をstring型にコピー
 		std::string errstr;
 		errstr.resize(errorBlob->GetBufferSize());
 
 		std::copy_n((char*)errorBlob->GetBufferPointer(),
-			errorBlob->GetBufferSize(),
-			errstr.begin());
+					errorBlob->GetBufferSize(),
+					errstr.begin());
 		errstr += "\n";
 		// エラー内容を出力ウィンドウに表示
 		OutputDebugStringA(errstr.c_str());
@@ -700,7 +710,7 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 	};
 
 	// デスクリプタテーブルの設定
-	CD3DX12_DESCRIPTOR_RANGE descRangeSRV; //デスクリプタテーブルの設定(シェーダリソース)
+	CD3DX12_DESCRIPTOR_RANGE descRangeSRV = {}; //デスクリプタテーブルの設定(シェーダリソース)
 	descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
 	// ルートパラメータの設定
@@ -710,7 +720,7 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
 
-	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 	rootSignatureDesc.Init_1_0(
 		_countof(rootparams),
 		rootparams,
@@ -729,7 +739,7 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 	{
 		return hr;
 	}
-	hr = w->dev->CreateRootSignature(
+	hr = dev->CreateRootSignature(
 		0,
 		rootSigBlob->GetBufferPointer(),
 		rootSigBlob->GetBufferSize(),
@@ -787,7 +797,7 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 			spriteBlendDesc.DestBlend = D3D12_BLEND_ZERO;          //使わない
 			goto SpriteBaseBlend;
 		default:
-		SpriteBaseBlend:
+SpriteBaseBlend:
 			/*共通設定*/
 			spriteBlendDesc.BlendEnable = true;                //ブレンドを有効にする
 			spriteBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD; //加算
@@ -814,7 +824,7 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 		// パイプラインにルートシグネチャをセット
 		spritePipeline.pRootSignature = spriteData.rootsignature.Get();
 
-		hr = w->dev->CreateGraphicsPipelineState(&spritePipeline, IID_PPV_ARGS(&spriteData.pipelinestate[i]));
+		hr = dev->CreateGraphicsPipelineState(&spritePipeline, IID_PPV_ARGS(&spriteData.pipelinestate[i]));
 	}
 
 	return hr;
@@ -836,7 +846,7 @@ int DirectDrawing::CreateVertexAndIndexBuffer()
 	UINT sizeVB;
 	sizeVB = static_cast<UINT>(sizeof(Vertex) * vertices[vertices.size() - 1].vertices.size());
 
-	hr = w->dev->CreateCommittedResource(
+	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(sizeVB),
@@ -868,7 +878,7 @@ int DirectDrawing::CreateVertexAndIndexBuffer()
 	UINT sizeIB;
 	sizeIB = static_cast<UINT>(sizeof(unsigned short) * vertices[vertices.size() - 1].indices.size());
 
-	hr = w->dev->CreateCommittedResource(
+	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(sizeIB),
@@ -939,7 +949,7 @@ int DirectDrawing::CreateVertexAndIndexBuffer()
 
 #pragma endregion //NormalVector
 
-	return (int)(vertices.size() - 1);
+	return static_cast<int>(vertices.size() - 1);
 }
 
 HRESULT DirectDrawing::CreateConstBuffer(int* objIndex)
@@ -948,7 +958,7 @@ HRESULT DirectDrawing::CreateConstBuffer(int* objIndex)
 
 	obj.push_back({});
 
-	hr = w->dev->CreateCommittedResource(
+	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstBufferData) + 0xFF) & ~0xFF), //リソース設定
@@ -959,7 +969,7 @@ HRESULT DirectDrawing::CreateConstBuffer(int* objIndex)
 	{
 		return hr;
 	}
-	hr = w->dev->CreateCommittedResource(
+	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(MaterialConstBufferData) + 0xFF) & ~0xFF), //リソース設定
@@ -980,17 +990,17 @@ HRESULT DirectDrawing::CreateConstBuffer(int* objIndex)
 	// 定数バッファビュー生成
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{};
 	cbvDesc.BufferLocation = obj[obj.size() - 1].constBuff->GetGPUVirtualAddress();
-	cbvDesc.SizeInBytes = (UINT)obj[obj.size() - 1].constBuff->GetDesc().Width;
-	w->dev->CreateConstantBufferView(
+	cbvDesc.SizeInBytes = static_cast<UINT>(obj[obj.size() - 1].constBuff->GetDesc().Width);
+	dev->CreateConstantBufferView(
 		&cbvDesc,
 		CD3DX12_CPU_DESCRIPTOR_HANDLE(
 			basicDescHeap->GetCPUDescriptorHandleForHeapStart(),
 			*objIndex,
-			w->dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+			dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 		)
 	);
 
-	*objIndex = (int)(obj.size() - 1);
+	*objIndex = static_cast<int>(obj.size() - 1);
 	return hr;
 }
 
@@ -1019,7 +1029,7 @@ int DirectDrawing::CreateNullConstant(const XMFLOAT3& pos, const XMMATRIX& rota,
 
 	nullBufferCount++;
 
-	return (int)obj.size() - 1;
+	return static_cast<int>(obj.size() - 1);
 }
 
 void DirectDrawing::UpdataConstant(
@@ -1027,15 +1037,15 @@ void DirectDrawing::UpdataConstant(
 	const DirectX::XMFLOAT4& color, const int& objectIndex, const int& polygonData,
 	Object* parent)
 {
-	if ((objectIndex < 0 || (size_t)objectIndex >= obj.size()) ||
-		(polygonData < -1 || (polygonData != -1 && (size_t)polygonData >= vertices.size()))/* ||
-		(parent < -1 || (parent != -1 && (size_t)parent >= obj.size()))*/)
+	if ((objectIndex < 0 || static_cast<size_t>(objectIndex) >= obj.size()) ||
+		(polygonData < -1 || (polygonData != -1 && static_cast<size_t>(polygonData) >= vertices.size()))/* ||
+		(parent < -1 || (parent != -1 && static_cast<size_t>(parent) >= obj.size()))*/)
 	{
 		return;
 	}
 
 	using namespace DirectX;
-	using namespace EngineMath;
+	using namespace Engine::Math;
 
 	bool dirtyFlag = false; //ダーティフラグ
 
@@ -1134,7 +1144,7 @@ int DirectDrawing::CreateSprite()
 	};
 
 	// 頂点バッファの生成
-	hr = w->dev->CreateCommittedResource(
+	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(vert)),
@@ -1158,7 +1168,7 @@ int DirectDrawing::CreateSprite()
 	sprite[sprite.size() - 1].vbView.StrideInBytes = sizeof(SpriteVertex);
 
 	// 定数バッファの生成
-	hr = w->dev->CreateCommittedResource(
+	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstBufferData) + 0xFF) & ~0xFF), //リソース設定
@@ -1183,7 +1193,7 @@ int DirectDrawing::CreateSprite()
 		return EoF;
 	}
 
-	return (int)(sprite.size() - 1);
+	return static_cast<int>(sprite.size() - 1);
 }
 
 HRESULT DirectDrawing::BasicDescHeapInit()
@@ -1202,9 +1212,9 @@ HRESULT DirectDrawing::BasicDescHeapInit()
 
 		descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; //シェーダから見える
-		descHeapDesc.NumDescriptors = (UINT)(50000); //定数バッファの数
+		descHeapDesc.NumDescriptors = static_cast<UINT>(50000); //定数バッファの数
 		// デスクリプタヒープの生成
-		hr = w->dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&basicDescHeap));
+		hr = dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&basicDescHeap));
 
 		return hr;
 	}
@@ -1212,58 +1222,62 @@ HRESULT DirectDrawing::BasicDescHeapInit()
 
 void DirectDrawing::BaseDrawGraphics()
 {
+	cmdList = DirectXInit::GetCommandList();
+
 	// ビューポート領域の設定
-	w->cmdList->RSSetViewports(
+	cmdList->RSSetViewports(
 		1,
 		&CD3DX12_VIEWPORT(
 			0.0f,
 			0.0f,
-			(float)w->windowWidth,
-			(float)w->windowHeight
+			static_cast<float>(DirectXInit::GetInstance()->windowWidth),
+			static_cast<float>(DirectXInit::GetInstance()->windowHeight)
 		)
 	);
 
 	// シザー矩形の設定
-	w->cmdList->RSSetScissorRects(
+	cmdList->RSSetScissorRects(
 		1,
 		&CD3DX12_RECT(
 			0,
 			0,
-			w->windowWidth,
-			w->windowHeight
+			DirectXInit::GetInstance()->windowWidth,
+			DirectXInit::GetInstance()->windowHeight
 		)
 	);
 }
 
 void DirectDrawing::BaseDrawSpriteGraphics()
 {
+	cmdList = DirectXInit::GetCommandList();
+
 	// ビューポート領域の設定
-	w->cmdList->RSSetViewports(
+	cmdList->RSSetViewports(
 		1,
 		&CD3DX12_VIEWPORT(
 			0.0f,
 			0.0f,
-			(float)w->windowWidth,
-			(float)w->windowHeight
+			static_cast<float>(DirectXInit::GetInstance()->windowWidth),
+			static_cast<float>(DirectXInit::GetInstance()->windowHeight)
 		)
 	);
 
 	// シザー矩形の設定
-	w->cmdList->RSSetScissorRects(
+	cmdList->RSSetScissorRects(
 		1,
 		&CD3DX12_RECT(
 			0,
 			0,
-			w->windowWidth,
-			w->windowHeight
+			DirectXInit::GetInstance()->windowWidth,
+			DirectXInit::GetInstance()->windowHeight
 		)
 	);
 
-	w->cmdList->SetPipelineState(spriteData.pipelinestate[blendMode].Get());
-	w->cmdList->SetGraphicsRootSignature(spriteData.rootsignature.Get());
+	cmdList->SetPipelineState(spriteData.pipelinestate[blendMode].Get());
+	cmdList->SetGraphicsRootSignature(spriteData.rootsignature.Get());
 
 	// プリミティブ形状の設定
-	w->cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 }
 
 int DirectDrawing::SetDrawBlendMode(int blendMode)
@@ -1275,7 +1289,7 @@ int DirectDrawing::SetDrawBlendMode(int blendMode)
 
 	this->blendMode = blendMode;
 
-	return (int)(this->blendMode);
+	return static_cast<int>(this->blendMode);
 }
 
 HRESULT DirectDrawing::SetNearFar(float nearClip, float farClip)
@@ -1294,8 +1308,8 @@ HRESULT DirectDrawing::SetNearFar(float nearClip, float farClip)
 	{
 		objectData[i].matProjection[CommonData::Projection::ORTHOGRAPHIC] = XMMatrixOrthographicOffCenterLH(
 			0.0f,
-			(float)w->windowWidth,
-			(float)w->windowHeight,
+			static_cast<float>(DirectXInit::GetInstance()->windowWidth),
+			static_cast<float>(DirectXInit::GetInstance()->windowHeight),
 			0.0f,
 			this->nearClip, //前端
 			this->farClip   //奥端
@@ -1303,7 +1317,8 @@ HRESULT DirectDrawing::SetNearFar(float nearClip, float farClip)
 
 		objectData[i].matProjection[CommonData::Projection::PERSPECTIVE] = XMMatrixPerspectiveFovLH(
 			XMConvertToRadians(60.0f),                      //上下画角60度
-			(float)w->windowWidth / (float)w->windowHeight, //アスペクト比
+			static_cast<float>(DirectXInit::GetInstance()->windowWidth) /
+			static_cast<float>(DirectXInit::GetInstance()->windowHeight), //アスペクト比
 			this->nearClip, //前端
 			this->farClip   //奥端
 		);
@@ -1313,8 +1328,8 @@ HRESULT DirectDrawing::SetNearFar(float nearClip, float farClip)
 	{
 		materialData[i].matProjection[CommonData::Projection::ORTHOGRAPHIC] = XMMatrixOrthographicOffCenterLH(
 			0.0f,
-			(float)w->windowWidth,
-			(float)w->windowHeight,
+			static_cast<float>(DirectXInit::GetInstance()->windowWidth),
+			static_cast<float>(DirectXInit::GetInstance()->windowHeight),
 			0.0f,
 			this->nearClip, //前端
 			this->farClip   //奥端
@@ -1322,7 +1337,8 @@ HRESULT DirectDrawing::SetNearFar(float nearClip, float farClip)
 
 		materialData[i].matProjection[CommonData::Projection::PERSPECTIVE] = XMMatrixPerspectiveFovLH(
 			XMConvertToRadians(60.0f),                    //上下画角60度
-			(float)w->windowWidth / (float)w->windowHeight, //アスペクト比
+			static_cast<float>(DirectXInit::GetInstance()->windowWidth) /
+			static_cast<float>(DirectXInit::GetInstance()->windowHeight), //アスペクト比
 			this->nearClip, //前端
 			this->farClip   //奥端
 		);

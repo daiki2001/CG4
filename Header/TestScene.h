@@ -10,7 +10,7 @@ class TestScene : public BaseScene
 public: // エイリアス
 	using XMFLOAT4 = DirectX::XMFLOAT4;
 	using XMMATRIX = DirectX::XMMATRIX;
-	using Vector3 = EngineMath::Vector3;
+	using Vector3 = Engine::Math::Vector3;
 
 public: // 定数
 	static const float sphereRadius; //球体オブジェクトの半径

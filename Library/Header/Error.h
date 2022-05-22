@@ -3,10 +3,17 @@
 #include <string>
 #include <cassert>
 
-#define EF (-1) //Error Function
+/*定数*/
+namespace Engine
+{
+static constexpr int functionError = -1;
+} // Engine
 
+/*関数*/
+namespace Engine
+{
 // エラーログを出力ウィンドウに出力し、終了する
-static void Error(const std::string& str, const char* file, const int& line, const bool& flag = true)
+static void ErrorLog(const std::string& str, const bool& flag = true, const char* file = __FILE__, const int& line = __LINE__)
 {
 	if (flag == false)
 	{
@@ -24,5 +31,4 @@ static void Error(const std::string& str, const char* file, const int& line, con
 
 	return;
 }
-
-#define ErrorLog(str, flag) Error(str, __FILE__, __LINE__, flag)
+} // Engine

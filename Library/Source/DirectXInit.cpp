@@ -1,14 +1,15 @@
 #include "./Header/DirectXInit.h"
 #include <string>
 
+Microsoft::WRL::ComPtr<ID3D12Device> DirectXInit::dev = {};
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DirectXInit::cmdList = {};
+
 DirectXInit::DirectXInit() :
 	Win32API(),
 	clearColor{ 0, 0, 0, 0 },
-	dev{},
 	dxgiFactory{},
 	swapchain{},
 	cmdAllocator{},
-	cmdList{},
 	cmdQueue{},
 	rtvHeaps{},
 	adapters{},
@@ -179,7 +180,8 @@ HRESULT DirectXInit::Init()
 		}
 		// スデスクリプタヒープのハンドルを取得
 		CD3DX12_CPU_DESCRIPTOR_HANDLE handle =
-			CD3DX12_CPU_DESCRIPTOR_HANDLE(rtvHeaps->GetCPUDescriptorHandleForHeapStart(),
+			CD3DX12_CPU_DESCRIPTOR_HANDLE(
+				rtvHeaps->GetCPUDescriptorHandleForHeapStart(),
 				i,
 				dev->GetDescriptorHandleIncrementSize(heapDesc.Type)
 			);
@@ -217,7 +219,8 @@ void DirectXInit::ClearScreen()
 	// 描画先の指定
 	// レンダーターゲットビュー用ディスクリプタヒープのハンドルを取得
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvH =
-		CD3DX12_CPU_DESCRIPTOR_HANDLE(rtvHeaps->GetCPUDescriptorHandleForHeapStart(),
+		CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			rtvHeaps->GetCPUDescriptorHandleForHeapStart(),
 			(INT)bbIndex,
 			dev->GetDescriptorHandleIncrementSize(heapDesc.Type)
 		);

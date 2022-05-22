@@ -3,7 +3,9 @@
 #include <math.h>
 #include <Windows.h>
 
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 // ’PˆÊs—ñ‚ğ‹‚ß‚é
 Matrix4 Identity()
@@ -192,4 +194,5 @@ Vector3 operator * (const Vector3& v, const Matrix4& m)
 {
 	return transform(v, m);
 }
-} //EngineMath
+} //Math
+} //Engine

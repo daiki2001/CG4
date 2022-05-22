@@ -1,19 +1,19 @@
 #include "./Header/Camera.h"
 
 float Camera::targetRadius = 150.0f;
-float Camera::longitude = EngineMath::degree * (-90.0f);
-float Camera::latitude = EngineMath::degree * (0.0f);
+float Camera::longitude = Engine::Math::degree * (-90.0f);
+float Camera::latitude = Engine::Math::degree * (0.0f);
 
-EngineMath::Vector3 Camera::pos = {};
-EngineMath::Vector3 Camera::target = { 0.0f, 50.0f, 0.0f };
-EngineMath::Vector3 Camera::upVec = { 0.0f, 1.0f, 0.0f };
+Engine::Math::Vector3 Camera::pos = {};
+Engine::Math::Vector3 Camera::target = { 0.0f, 50.0f, 0.0f };
+Engine::Math::Vector3 Camera::upVec = { 0.0f, 1.0f, 0.0f };
 
 DirectX::XMMATRIX Camera::CreateCamera(const XMVECTOR& pos, const XMVECTOR& target, const XMVECTOR& upVector)
 {
 	using namespace DirectX;
 
 	XMVECTOR x, y, z;
-	XMMATRIX mat;
+	XMMATRIX mat = {};
 
 	z = target - pos;
 	z = XMVector3Normalize(z);
@@ -47,7 +47,7 @@ DirectX::XMMATRIX Camera::CreateCameraFix(const XMVECTOR& pos, const XMVECTOR& t
 	using namespace DirectX;
 
 	XMVECTOR x, y, z, d;
-	XMMATRIX mat;
+	XMMATRIX mat = {};
 
 	y = XMVector3Normalize(upVector);
 	d = target - pos;

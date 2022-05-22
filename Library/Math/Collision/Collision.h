@@ -5,7 +5,7 @@
 namespace Collision
 {
 using XMMATRIX = DirectX::XMMATRIX;
-using Vector3 = EngineMath::Vector3;
+using Vector3 = Engine::Math::Vector3;
 
 // ‹…‘Ì“¯Žm‚Ì“–‚½‚è”»’è
 bool IsSphereToSphereCollision(const Sphere& sphere1, const Sphere& sphere2, Vector3* inter = nullptr);

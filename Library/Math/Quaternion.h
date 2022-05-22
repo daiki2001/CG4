@@ -2,7 +2,9 @@
 #include "Vector3.h"
 #include "Matrix4.h"
 
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 struct Quaternion
 {
@@ -53,4 +55,5 @@ Matrix4 rotate(const Quaternion& q);
 Quaternion quaternion(const Matrix4& m);
 Quaternion quaternion(const Vector3& v, const Quaternion& q);
 Vector3 getAxis(const Quaternion& q);
-} //EngineMath
+} //Math
+} //Engine

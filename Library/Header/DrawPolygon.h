@@ -10,14 +10,14 @@ class DrawPolygon final : public DebugText
 {
 public: // メンバ関数
 	// コンストラクタ
-	DrawPolygon(const DirectXInit* w);
+	DrawPolygon();
 	// デストラクタ
 	~DrawPolygon();
 
 	// 三角形の作成
 	int CreateTriangle(const XMFLOAT3& vertex1, const DirectX::XMFLOAT2& uv1,
-		const XMFLOAT3& vertex2, const DirectX::XMFLOAT2& uv2,
-		const XMFLOAT3& vertex3, const DirectX::XMFLOAT2& uv3, const bool& isFill = true);
+					   const XMFLOAT3& vertex2, const DirectX::XMFLOAT2& uv2,
+					   const XMFLOAT3& vertex3, const DirectX::XMFLOAT2& uv3, const bool& isFill = true);
 	// 矩形の作成
 	int CreateRect(const float& width, const float& height, const bool& isFill = true);
 	// 正多角形の作成
@@ -43,19 +43,19 @@ public: // メンバ関数
 
 	// オブジェクトの描画処理
 	int Draw(const int& polygonData, const XMFLOAT3& position, const XMMATRIX& rotation, const XMFLOAT3& scale,
-		const XMFLOAT4& color, const int& graphHandle = 0, const bool& isFill = true,
-		const bool& isOrthoGraphic = false, const bool& viewMultiFlag = true, Object* parent = nullptr);
+			 const XMFLOAT4& color, const int& graphHandle = 0, const bool& isFill = true,
+			 const bool& isOrthoGraphic = false, const bool& viewMultiFlag = true, Object* parent = nullptr);
 
 	// モデルの描画処理
 	int DrawOBJ(const int& object, const XMFLOAT3& position, const XMMATRIX& rotation, const XMFLOAT3& scale,
-		const XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
-		const bool& isOrthoGraphic = false, const bool& viewMultiFlag = true, Object* parent = nullptr);
+				const XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+				const bool& isOrthoGraphic = false, const bool& viewMultiFlag = true, Object* parent = nullptr);
 
 	// カメラの作成
 	int CreateCamera(const XMFLOAT3& cameraPos, const XMFLOAT3& cameraTarget, const XMFLOAT3& upVector);
 	// カメラの設定
 	void SetCamera(const XMFLOAT3& cameraPos, const XMFLOAT3& cameraTarget, const XMFLOAT3& upVector,
-		const int& cameraNo = MAIN_CAMERA);
+				   const int& cameraNo = MAIN_CAMERA);
 	// カメラの切り替え
 	void ChangeCamera(const int& cameraNo);
 
@@ -77,8 +77,8 @@ private:
 	void LoadMaterial(const std::string& directoryPath, const std::string& filename);
 
 	/*頂点座標とインデックスデータ計算用*/
-	void Circle(const XMFLOAT3& centerPos, const float& r, const size_t& divNum, const bool& flag,
-		Vertex* v, unsigned short* index);
+	void Circle(const XMFLOAT3& centerPos, const float& r, const size_t& divNum,
+				const bool& flag, Vertex* v, unsigned short* index);
 
 	// データの消去
 	void DataClear();

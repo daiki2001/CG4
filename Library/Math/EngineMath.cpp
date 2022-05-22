@@ -1,6 +1,8 @@
 #include "EngineMath.h"
 
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 bool operator==(const DirectX::XMFLOAT4& a, const DirectX::XMFLOAT4& b)
 {
@@ -11,4 +13,5 @@ bool operator!=(const DirectX::XMFLOAT4& a, const DirectX::XMFLOAT4& b)
 {
 	return !(a == b);
 }
-} //EngineMath
+} //Math
+} //Engine

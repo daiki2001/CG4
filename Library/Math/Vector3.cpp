@@ -1,7 +1,9 @@
 #include "Vector3.h"
 #include <cmath>
 
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 Vector3::Vector3() :
 	DirectX::XMFLOAT3{ 0, 0, 0 }
@@ -135,4 +137,5 @@ const Vector3 operator/(const Vector3& v, float s)
 	Vector3 temp(v);
 	return temp /= s;
 }
-} //EngineMath
+} //Math
+} //Engine

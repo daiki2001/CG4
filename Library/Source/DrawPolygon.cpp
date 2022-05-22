@@ -3,11 +3,12 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "./Header/DirectXInit.h"
 
 #define EoF -1 // End of Function
 
-DrawPolygon::DrawPolygon(const DirectXInit* w) :
-	DebugText(w),
+DrawPolygon::DrawPolygon() :
+	DebugText(),
 	polygonCount(0),
 	loopCount(0),
 	lightVec{},
@@ -702,7 +703,7 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 		UINT sizeVB;
 		sizeVB = static_cast<UINT>(sizeof(Vertex) * vertices[i].vertices.size());
 
-		hr = w->dev->CreateCommittedResource(
+		hr = dev->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer(sizeVB),
@@ -737,7 +738,7 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 		UINT sizeIB;
 		sizeIB = static_cast<UINT>(sizeof(unsigned short) * vertices[i].indices.size());
 
-		hr = w->dev->CreateCommittedResource(
+		hr = dev->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer(sizeIB),
@@ -771,7 +772,7 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 
 	for (size_t i = obj.size() - verticesCount; i < obj.size(); i++)
 	{
-		hr = w->dev->CreateCommittedResource(
+		hr = dev->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstBufferData) + 0xFF) & ~0xFF), //リソース設定
@@ -782,7 +783,7 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 		{
 			return hr;
 		}
-		hr = w->dev->CreateCommittedResource(
+		hr = dev->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer((sizeof(MaterialConstBufferData) + 0xFF) & ~0xFF), //リソース設定
@@ -1122,8 +1123,8 @@ int DrawPolygon::Draw(
 
 	BaseDrawGraphics();
 
-	w->cmdList->SetPipelineState(objectData[isDepthWriteBan].pipelinestate[blendMode].Get());
-	w->cmdList->SetGraphicsRootSignature(objectData[isDepthWriteBan].rootsignature.Get());
+	cmdList->SetPipelineState(objectData[isDepthWriteBan].pipelinestate[blendMode].Get());
+	cmdList->SetGraphicsRootSignature(objectData[isDepthWriteBan].rootsignature.Get());
 
 	ConstBufferData* constMap = nullptr;
 	obj[index.constant].constBuff->Map(0, nullptr, (void**)&constMap); //マッピング
@@ -1135,29 +1136,29 @@ int DrawPolygon::Draw(
 
 	// デスクリプタヒープをセット
 	ID3D12DescriptorHeap* ppHeaps[] = { texCommonData.descHeap.Get() };
-	w->cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 	// 定数バッファビューをセット
-	w->cmdList->SetGraphicsRootConstantBufferView(0, obj[index.constant].constBuff->GetGPUVirtualAddress());
-	w->cmdList->SetGraphicsRootDescriptorTable(1, textrueData[index.textrue].gpuDescHandle);
+	cmdList->SetGraphicsRootConstantBufferView(0, obj[index.constant].constBuff->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootDescriptorTable(1, textrueData[index.textrue].gpuDescHandle);
 
 	if (isFill == true)
 	{
 		// プリミティブ形状の設定
-		w->cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 	else
 	{
 		// プリミティブ形状の設定
-		w->cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
 
 	// 頂点バッファの設定
-	w->cmdList->IASetVertexBuffers(0, 1, &vertices[polygonData].vbView);
+	cmdList->IASetVertexBuffers(0, 1, &vertices[polygonData].vbView);
 	// インデックスバッファビューの設定
-	w->cmdList->IASetIndexBuffer(&vertices[polygonData].ibView);
+	cmdList->IASetIndexBuffer(&vertices[polygonData].ibView);
 	// 描画コマンド
-	w->cmdList->DrawIndexedInstanced((UINT)vertices[polygonData].indices.size(), 1, 0, 0, 0);
+	cmdList->DrawIndexedInstanced((UINT)vertices[polygonData].indices.size(), 1, 0, 0, 0);
 
 	return index.constant;
 }
@@ -1257,8 +1258,8 @@ int DrawPolygon::DrawOBJ(const int& object, const XMFLOAT3& position, const XMMA
 
 	BaseDrawGraphics();
 
-	w->cmdList->SetPipelineState(materialData[isDepthWriteBan].pipelinestate[blendMode].Get());
-	w->cmdList->SetGraphicsRootSignature(materialData[isDepthWriteBan].rootsignature.Get());
+	cmdList->SetPipelineState(materialData[isDepthWriteBan].pipelinestate[blendMode].Get());
+	cmdList->SetGraphicsRootSignature(materialData[isDepthWriteBan].rootsignature.Get());
 
 	for (int i = static_cast<int>(parentIndex); i <= object; i++)
 	{
@@ -1281,22 +1282,22 @@ int DrawPolygon::DrawOBJ(const int& object, const XMFLOAT3& position, const XMMA
 
 		// デスクリプタヒープをセット
 		ID3D12DescriptorHeap* ppHeaps[] = { texCommonData.descHeap.Get() };
-		w->cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 		// 定数バッファビューをセット
-		w->cmdList->SetGraphicsRootConstantBufferView(0, obj[index.constant].constBuff->GetGPUVirtualAddress());
-		w->cmdList->SetGraphicsRootConstantBufferView(1, obj[index.constant].materialConstBuff->GetGPUVirtualAddress());
-		w->cmdList->SetGraphicsRootDescriptorTable(2, textrueData[obj[i].material.textrueIndex].gpuDescHandle);
+		cmdList->SetGraphicsRootConstantBufferView(0, obj[index.constant].constBuff->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(1, obj[index.constant].materialConstBuff->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootDescriptorTable(2, textrueData[obj[i].material.textrueIndex].gpuDescHandle);
 
 		// プリミティブ形状の設定
-		w->cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// 頂点バッファの設定
-		w->cmdList->IASetVertexBuffers(0, 1, &vertices[obj[i].polygonData].vbView);
+		cmdList->IASetVertexBuffers(0, 1, &vertices[obj[i].polygonData].vbView);
 		// インデックスバッファビューの設定
-		w->cmdList->IASetIndexBuffer(&vertices[obj[i].polygonData].ibView);
+		cmdList->IASetIndexBuffer(&vertices[obj[i].polygonData].ibView);
 		// 描画コマンド
-		w->cmdList->DrawIndexedInstanced((UINT)vertices[obj[i].polygonData].indices.size(), 1, 0, 0, 0);
+		cmdList->DrawIndexedInstanced((UINT)vertices[obj[i].polygonData].indices.size(), 1, 0, 0, 0);
 	}
 
 	return static_cast<int>(parentIndex);
@@ -1353,10 +1354,14 @@ DirectX::XMFLOAT3 DrawPolygon::ScreenToWorld(int x, int y, float z)
 	InvView = XMMatrixInverse(nullptr, matView[cameraNo]);
 	InvPrj = XMMatrixInverse(nullptr, objectData[isDepthWriteBan].matProjection[CommonData::Projection::PERSPECTIVE]);
 	VP = XMMatrixIdentity();
-	VP.r[0].m128_f32[0] = w->windowWidth / 2.0f;
-	VP.r[1].m128_f32[1] = -(w->windowHeight) / 2.0f;
-	VP.r[3].m128_f32[0] = w->windowWidth / 2.0f;
-	VP.r[3].m128_f32[1] = w->windowHeight / 2.0f;
+	VP.r[0].m128_f32[0] =
+		static_cast<float>(DirectXInit::GetInstance()->windowWidth) / 2.0f;
+	VP.r[1].m128_f32[1] =
+		-(static_cast<float>(DirectXInit::GetInstance()->windowHeight)) / 2.0f;
+	VP.r[3].m128_f32[0] =
+		static_cast<float>(DirectXInit::GetInstance()->windowWidth) / 2.0f;
+	VP.r[3].m128_f32[1] =
+		static_cast<float>(DirectXInit::GetInstance()->windowHeight) / 2.0f;
 	InvViewport = XMMatrixInverse(nullptr, VP);
 
 	XMMATRIX temp = InvViewport * InvPrj * InvView;

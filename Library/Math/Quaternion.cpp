@@ -1,7 +1,9 @@
 #include "Quaternion.h"
 #include <math.h>
 
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 Quaternion quaternion(float x, float y, float z, float w)
 {
@@ -223,7 +225,7 @@ Matrix4 rotate(const Quaternion& q)
 
 Quaternion quaternion(const Matrix4& m)
 {
-	Quaternion result;
+	Quaternion result = {};
 	float tr = m.r[0].m128_f32[0] + m.r[1].m128_f32[1] + m.r[2].m128_f32[2] + m.r[3].m128_f32[3];
 
 	if (tr >= 1.0f)
@@ -250,7 +252,7 @@ Quaternion quaternion(const Matrix4& m)
 	int k = (j + 1) % 3;
 	tr = m.r[i].m128_f32[i] - m.r[j].m128_f32[j] - m.r[k].m128_f32[k] + 1.0f;
 	float fourD = 2.0f * sqrtf(tr);
-	float qa[4];
+	float qa[4] = {};
 	qa[i] = fourD / 4.0f;
 	qa[j] = (m.r[j].m128_f32[i] + m.r[i].m128_f32[j]) / fourD;
 	qa[k] = (m.r[k].m128_f32[i] + m.r[i].m128_f32[k]) / fourD;
@@ -278,4 +280,5 @@ Vector3 getAxis(const Quaternion& q)
 
 	return result;
 }
-} //EngineMath
+} //Math
+} //Engine

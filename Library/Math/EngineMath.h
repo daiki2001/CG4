@@ -7,16 +7,22 @@
 #include "./Math/Easing.h"
 
 /*定数*/
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 static constexpr float degree = DirectX::XM_PI / 180.0f; //1°
 
 static constexpr float gravity = 9.8f; //重力加速度
-} //EngineMath
+} //Math
+} //Engine
 
 /*オペレーター演算子オーバーロード*/
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 bool operator==(const DirectX::XMFLOAT4& a, const DirectX::XMFLOAT4& b);
 bool operator!=(const DirectX::XMFLOAT4& a, const DirectX::XMFLOAT4& b);
-} //EngineMath
+} //Math
+} //Engine

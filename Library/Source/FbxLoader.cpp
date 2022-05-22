@@ -17,7 +17,7 @@ void FbxLoader::Init()
 	//assert(fbxManger == nullptr);
 	ErrorLog("fbxMangerを再初期化しようとしています。\n", fbxManger != nullptr);
 
-	device = DirectXInit::GetInstance()->dev.Get();
+	device = DirectXInit::GetDevice();
 
 	// FBXマネージャーの生成
 	fbxManger = FbxManager::Create();
@@ -66,13 +66,15 @@ void FbxLoader::LoadModelFromFile(const string& modelPath)
 	model->nodes.reserve(nodeCount);
 	// ルートノードから順に解析してモデルに流し込む
 	ParseNodeRecursive(model.get(), fbxScene->GetRootNode());
+	// バッファの生成
+	model->CreateBuffers();
 	// FBXシーンの解放
 	fbxScene->Destroy();
 }
 
 void FbxLoader::ParseNodeRecursive(Model* model, FbxNode* fbxNode, Node* parent)
 {
-	using namespace EngineMath;
+	using namespace Engine::Math;
 
 	// ノード名を取得
 	string name = fbxNode->GetName();

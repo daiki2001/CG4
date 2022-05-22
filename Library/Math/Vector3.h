@@ -1,7 +1,9 @@
 #pragma once
 #include <DirectXMath.h>
 
-namespace EngineMath
+namespace Engine
+{
+namespace Math
 {
 class Vector3 : public DirectX::XMFLOAT3
 {
@@ -42,4 +44,5 @@ const Vector3 operator-(const Vector3& v1, const Vector3& v2);
 const Vector3 operator*(const Vector3& v, float s);
 const Vector3 operator*(float s, const Vector3& v);
 const Vector3 operator/(const Vector3& v, float s);
-} //EngineMath
+} //Math
+} //Engine

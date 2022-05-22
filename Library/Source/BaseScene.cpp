@@ -3,7 +3,7 @@
 
 BaseScene::BaseScene(SceneChenger* sceneChenger) :
 	sceneChenger(sceneChenger),
-	draw(DirectXInit::GetInstance())
+	draw()
 {
 }
 

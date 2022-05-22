@@ -45,7 +45,7 @@ private:
 
 	/*メンバ関数*/
 public:
-	LoadTex(const DirectXInit* w);
+	LoadTex();
 	~LoadTex();
 
 	// テクスチャバッファの生成
@@ -53,15 +53,15 @@ public:
 
 	// スプライトの描画
 	int DrawTextrue(const float& posX, const float& posY, const float& width, const float& height,
-		const float& angle = 0, const int& graphHandle = 0,
-		const DirectX::XMFLOAT2& anchorpoint = { 0.5f, 0.5f }, const XMFLOAT4& color = { 1, 1, 1, 1 },
-		const int& parent = -1);
-	
+					const float& angle = 0, const int& graphHandle = 0,
+					const DirectX::XMFLOAT2& anchorpoint = { 0.5f, 0.5f }, const XMFLOAT4& color = { 1, 1, 1, 1 },
+					const int& parent = -1);
+
 	// スプライトの切り出し描画
 	int DrawCutTextrue(const float& posX, const float& posY, const float& width, const float& height,
-		const DirectX::XMFLOAT2& texPos, const DirectX::XMFLOAT2& texSize, const float& angle = 0,
-		const int& graphHandle = 0, const DirectX::XMFLOAT2& anchorpoint = { 0.5f, 0.5f },
-		const XMFLOAT4& color = { 1, 1, 1, 1 }, const int& parent = -1);
+					   const DirectX::XMFLOAT2& texPos, const DirectX::XMFLOAT2& texSize, const float& angle = 0,
+					   const int& graphHandle = 0, const DirectX::XMFLOAT2& anchorpoint = { 0.5f, 0.5f },
+					   const XMFLOAT4& color = { 1, 1, 1, 1 }, const int& parent = -1);
 
 	// 内部の初期化用関数
 	void LoopEnd();

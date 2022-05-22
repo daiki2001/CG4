@@ -6,7 +6,7 @@ class Camera
 private: // エイリアス
 	using XMVECTOR = DirectX::XMVECTOR;
 	using XMMATRIX = DirectX::XMMATRIX;
-	using Vector3 = EngineMath::Vector3;
+	using Vector3 = Engine::Math::Vector3;
 
 public: // 静的メンバ変数
 	static float targetRadius; //注視点からの距離

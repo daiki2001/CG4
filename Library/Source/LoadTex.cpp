@@ -1,6 +1,5 @@
 #include "./Header/LoadTex.h"
-
-#define EoF -1 // End of Function
+#include "./Header/Error.h"
 
 TextrueCommon::TextrueCommon() :
 	metadata{},
@@ -16,8 +15,8 @@ TextrueCommon::TextrueCommon() :
 DirectDrawing::vector<Textrue> LoadTex::textrueData = {};
 TextrueCommon LoadTex::texCommonData = {};
 
-LoadTex::LoadTex(const DirectXInit* w) :
-	DirectDrawing(w),
+LoadTex::LoadTex() :
+	DirectDrawing(),
 	spriteCount(0)
 {
 }
@@ -29,6 +28,8 @@ LoadTex::~LoadTex()
 
 int LoadTex::LoadTextrue(const wchar_t* fileName)
 {
+	using namespace Engine;
+
 	HRESULT hr = S_FALSE;
 	CD3DX12_RESOURCE_DESC texResDesc{};
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
@@ -42,10 +43,10 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; //シェーダから見える
 		descHeapDesc.NumDescriptors = (UINT)(50000); //テクスチャバッファの数
 		// デスクリプタヒープの生成
-		hr = w->dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&texCommonData.descHeap));
+		hr = dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&texCommonData.descHeap));
 		if (FAILED(hr))
 		{
-			return EoF;
+			return functionError;
 		}
 	}
 
@@ -60,7 +61,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 
 		textrueData.push_back({});
-		hr = w->dev->CreateCommittedResource(
+		hr = dev->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0),
 			D3D12_HEAP_FLAG_NONE,
 			&texResDesc,
@@ -70,7 +71,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return EoF;
+			return functionError;
 		}
 
 		// テクスチャバッファにデータ転送
@@ -83,7 +84,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return EoF;
+			return functionError;
 		}
 
 		// デスクリプタヒープの先頭ハンドル(CPU)を取得
@@ -91,7 +92,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 			CD3DX12_CPU_DESCRIPTOR_HANDLE(
 				texCommonData.descHeap->GetCPUDescriptorHandleForHeapStart(),
 				(INT)(textrueData.size() - 1),
-				w->dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+				dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 			);
 
 		// デスクリプタヒープの先頭ハンドル(GPU)を取得
@@ -99,7 +100,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 			CD3DX12_GPU_DESCRIPTOR_HANDLE(
 				texCommonData.descHeap->GetGPUDescriptorHandleForHeapStart(),
 				(INT)(textrueData.size() - 1),
-				w->dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+				dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 			);
 
 		// シェーダリソースビュー設定
@@ -108,7 +109,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
 		srvDesc.Texture2D.MipLevels = 1;
 
-		w->dev->CreateShaderResourceView(
+		dev->CreateShaderResourceView(
 			textrueData[0].texbuff.Get(), //ビューと関連付けるバッファ
 			&srvDesc, //テクスチャ設定情報
 			textrueData[textrueData.size() - 1].cpuDescHandle
@@ -137,7 +138,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 
 		textrueData.push_back({});
-		hr = w->dev->CreateCommittedResource(
+		hr = dev->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0),
 			D3D12_HEAP_FLAG_NONE,
 			&texResDesc,
@@ -147,7 +148,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return EoF;
+			return functionError;
 		}
 
 		// テクスチャバッファにデータ転送
@@ -160,7 +161,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return EoF;
+			return functionError;
 		}
 
 		// デスクリプタヒープの先頭ハンドル(CPU)を取得
@@ -168,7 +169,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 			CD3DX12_CPU_DESCRIPTOR_HANDLE(
 				texCommonData.descHeap->GetCPUDescriptorHandleForHeapStart(),
 				(INT)(textrueData.size() - 1),
-				w->dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+				dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 			);
 
 		// デスクリプタヒープの先頭ハンドル(GPU)を取得
@@ -176,7 +177,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 			CD3DX12_GPU_DESCRIPTOR_HANDLE(
 				texCommonData.descHeap->GetGPUDescriptorHandleForHeapStart(),
 				(INT)(textrueData.size() - 1),
-				w->dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+				dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 			);
 
 		// シェーダリソースビュー設定
@@ -185,7 +186,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
 		srvDesc.Texture2D.MipLevels = 1;
 
-		w->dev->CreateShaderResourceView(
+		dev->CreateShaderResourceView(
 			textrueData[textrueData.size() - 1].texbuff.Get(), //ビューと関連付けるバッファ
 			&srvDesc, //テクスチャ設定情報
 			textrueData[textrueData.size() - 1].cpuDescHandle
@@ -203,21 +204,23 @@ void LoadTex::DataClear()
 
 int LoadTex::DrawTextureInit()
 {
+	using namespace Engine;
+
 	int size = 0;
 
 	size = CreateSprite();
-	if (size == EoF)
+	if (size == functionError)
 	{
-		return EoF;
+		return functionError;
 	}
 
 	if (isDrawTextrueInit == false)
 	{
 		isDrawTextrueInit = true;
 
-		if (LoadTextrue() == EoF)
+		if (LoadTextrue() == functionError)
 		{
-			return EoF;
+			return functionError;
 		}
 	}
 
@@ -225,15 +228,16 @@ int LoadTex::DrawTextureInit()
 }
 
 int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& width, const float& height,
-	const float& angle, const int& graphHandle, const DirectX::XMFLOAT2& anchorpoint,
-	const XMFLOAT4& color, const int& parent)
+						 const float& angle, const int& graphHandle, const DirectX::XMFLOAT2& anchorpoint,
+						 const XMFLOAT4& color, const int& parent)
 {
 	using namespace DirectX;
+	using namespace Engine;
 
 	if ((graphHandle < 0 || (UINT)graphHandle > texCommonData.textrueCount) ||
 		(parent < -1 || (parent != -1 && (size_t)parent >= spriteIndex.size())))
 	{
-		return EoF;
+		return functionError;
 	}
 
 	bool isInit = false;
@@ -246,9 +250,9 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 	if (isInit == false)
 	{
 		int size = DrawTextureInit();
-		if (size == EoF)
+		if (size == functionError)
 		{
-			return EoF;
+			return functionError;
 		}
 
 		spriteIndex.push_back({ size, graphHandle });
@@ -256,7 +260,7 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 
 	if (spriteIndex.size() == 0)
 	{
-		return EoF;
+		return functionError;
 	}
 
 	spriteCount++;
@@ -291,10 +295,10 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 		float top = (0.0f - sprite[index.constant].anchorpoint.y) * sprite[index.constant].size.y;
 		float bottom = (1.0f - sprite[index.constant].anchorpoint.y) * sprite[index.constant].size.y;
 
-		vert[LB].pos = {  left, bottom, 0.0f };
-		vert[LT].pos = {  left,    top, 0.0f };
+		vert[LB].pos = { left, bottom, 0.0f };
+		vert[LT].pos = { left, top, 0.0f };
 		vert[RB].pos = { right, bottom, 0.0f };
-		vert[RT].pos = { right,    top, 0.0f };
+		vert[RT].pos = { right, top, 0.0f };
 
 		// 頂点バッファへのデータ転送
 		SpriteVertex* vertexMap = nullptr;
@@ -329,16 +333,16 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 
 	// デスクリプタヒープをセット
 	ID3D12DescriptorHeap* ppHeaps[] = { texCommonData.descHeap.Get() };
-	w->cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 	// 定数バッファビューをセット
-	w->cmdList->SetGraphicsRootConstantBufferView(0, sprite[index.constant].constBuff->GetGPUVirtualAddress());
-	w->cmdList->SetGraphicsRootDescriptorTable(1, textrueData[index.textrue].gpuDescHandle);
+	cmdList->SetGraphicsRootConstantBufferView(0, sprite[index.constant].constBuff->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootDescriptorTable(1, textrueData[index.textrue].gpuDescHandle);
 
 	// 頂点バッファの設定
-	w->cmdList->IASetVertexBuffers(0, 1, &sprite[index.constant].vbView);
+	cmdList->IASetVertexBuffers(0, 1, &sprite[index.constant].vbView);
 	// 描画コマンド
-	w->cmdList->DrawInstanced(4, 1, 0, 0);
+	cmdList->DrawInstanced(4, 1, 0, 0);
 
 #pragma endregion
 
@@ -346,15 +350,16 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 }
 
 int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& width, const float& height,
-	const DirectX::XMFLOAT2& texPos, const DirectX::XMFLOAT2& texSize, const float& angle,
-	const int& graphHandle, const DirectX::XMFLOAT2& anchorpoint, const XMFLOAT4& color, const int& parent)
+							const DirectX::XMFLOAT2& texPos, const DirectX::XMFLOAT2& texSize, const float& angle,
+							const int& graphHandle, const DirectX::XMFLOAT2& anchorpoint, const XMFLOAT4& color, const int& parent)
 {
 	using namespace DirectX;
+	using namespace Engine;
 
 	if ((graphHandle < 0 || (UINT)graphHandle > texCommonData.textrueCount) ||
 		(parent < -1 && (size_t)parent >= spriteIndex.size()))
 	{
-		return EoF;
+		return functionError;
 	}
 
 	bool isInit = false;
@@ -367,9 +372,9 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 	if (isInit == false)
 	{
 		int size = DrawTextureInit();
-		if (size == EoF)
+		if (size == functionError)
 		{
-			return EoF;
+			return functionError;
 		}
 
 		spriteIndex.push_back({ size, graphHandle });
@@ -377,7 +382,7 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 
 	if (spriteIndex.size() == 0)
 	{
-		return EoF;
+		return functionError;
 	}
 
 	spriteCount++;
@@ -418,10 +423,10 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 		float top = (0.0f - sprite[index.constant].anchorpoint.y) * sprite[index.constant].size.y;
 		float bottom = (1.0f - sprite[index.constant].anchorpoint.y) * sprite[index.constant].size.y;
 
-		vert[LB].pos = {  left, bottom, 0.0f };
-		vert[LT].pos = {  left,    top, 0.0f };
+		vert[LB].pos = { left, bottom, 0.0f };
+		vert[LT].pos = { left, top, 0.0f };
 		vert[RB].pos = { right, bottom, 0.0f };
-		vert[RT].pos = { right,    top, 0.0f };
+		vert[RT].pos = { right, top, 0.0f };
 
 		// テクスチャデータ取得
 		D3D12_RESOURCE_DESC resDesc = textrueData[index.textrue].texbuff->GetDesc();
@@ -431,10 +436,10 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 		float texTop = sprite[index.constant].texLeftTop.y / resDesc.Height;
 		float texBottom = (sprite[index.constant].texLeftTop.y + sprite[index.constant].texSize.y) / resDesc.Height;
 
-		vert[LB].uv = {  texLeft, texBottom };
-		vert[LT].uv = {  texLeft,    texTop };
+		vert[LB].uv = { texLeft, texBottom };
+		vert[LT].uv = { texLeft, texTop };
 		vert[RB].uv = { texRight, texBottom };
-		vert[RT].uv = { texRight,    texTop };
+		vert[RT].uv = { texRight, texTop };
 
 		// 頂点バッファへのデータ転送
 		SpriteVertex* vertexMap = nullptr;
@@ -470,16 +475,16 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 
 	// デスクリプタヒープをセット
 	ID3D12DescriptorHeap* ppHeaps[] = { texCommonData.descHeap.Get() };
-	w->cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 	// 定数バッファビューをセット
-	w->cmdList->SetGraphicsRootConstantBufferView(0, sprite[index.constant].constBuff->GetGPUVirtualAddress());
-	w->cmdList->SetGraphicsRootDescriptorTable(1, textrueData[index.textrue].gpuDescHandle);
+	cmdList->SetGraphicsRootConstantBufferView(0, sprite[index.constant].constBuff->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootDescriptorTable(1, textrueData[index.textrue].gpuDescHandle);
 
 	// 頂点バッファの設定
-	w->cmdList->IASetVertexBuffers(0, 1, &sprite[index.constant].vbView);
+	cmdList->IASetVertexBuffers(0, 1, &sprite[index.constant].vbView);
 	// 描画コマンド
-	w->cmdList->DrawInstanced(4, 1, 0, 0);
+	cmdList->DrawInstanced(4, 1, 0, 0);
 
 #pragma endregion
 

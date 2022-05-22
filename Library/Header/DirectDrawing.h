@@ -1,5 +1,4 @@
 #pragma once
-#include "DirectXInit.h"
 #include "./Math/EngineMath.h"
 #include "./Math/Collision/CollisionInfo.h"
 #include <vector>
@@ -237,8 +236,10 @@ protected: // エイリアス
 public: // 静的メンバ変数
 	static bool isDepthWriteBan; //trueだったら、デプスに対しての上書き禁止
 protected:
-	static vector<Sprite> sprite; //スプライトのデータ
-	static vector<IndexData> spriteIndex; //スプライトのデータのインデックス
+	static ID3D12Device* dev;                  //D3D12デバイス
+	static ID3D12GraphicsCommandList* cmdList; //コマンドリスト
+	static vector<Sprite> sprite;              //スプライトのデータ
+	static vector<IndexData> spriteIndex;      //スプライトのデータのインデックス
 
 	static CommonData spriteData; //スプライトのデータで共通のデータ
 
@@ -246,7 +247,7 @@ protected:
 
 public: // メンバ関数
 	// コンストラクタ
-	DirectDrawing(const DirectXInit* w);
+	DirectDrawing();
 	// デストラクタ
 	~DirectDrawing();
 
@@ -268,8 +269,8 @@ public: // メンバ関数
 	/// <param name="polygonData"> 頂点情報の要素番号 </param>
 	/// <param name="parent"> 親の要素番号 </param>
 	void UpdataConstant(const XMFLOAT3& pos, const XMMATRIX& rota, const XMFLOAT3& scale,
-		const DirectX::XMFLOAT4& color, const int& objectIndex, const int& polygonData = -1,
-		Object* parent = nullptr);
+						const DirectX::XMFLOAT4& color, const int& objectIndex,
+						const int& polygonData = -1, Object* parent = nullptr);
 	// 描画の際のブレンドモードをセットする
 	int SetDrawBlendMode(int blendMode);
 	// カメラのニアクリップ距離とファークリップ距離を設定する
@@ -306,8 +307,6 @@ private:
 	// データの消去
 	void DataClear();
 protected: // メンバ変数
-	const DirectXInit* w;
-
 	vector<VertexData> vertices; //頂点データ
 	Vertex* vertMap;
 

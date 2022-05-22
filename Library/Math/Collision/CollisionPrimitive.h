@@ -12,7 +12,7 @@ struct BaseCollision
 struct Sphere : BaseCollision
 {
 private: // エイリアス
-	using Vector3 = EngineMath::Vector3;
+	using Vector3 = Engine::Math::Vector3;
 
 public:
 	Vector3 center = Vector3(0.0f, 0.0f, 0.0f);
@@ -31,14 +31,14 @@ public:
 struct Plane : BaseCollision
 {
 private: // エイリアス
-	using Vector3 = EngineMath::Vector3;
+	using Vector3 = Engine::Math::Vector3;
 
 public:
 	Vector3 normal = Vector3(0.0f, 0.0f, -1.0f);
 	float distance = 0.0f;
 
 	Plane() = default;
-	Plane(EngineMath::Matrix4 rotation, float distance) :
+	Plane(Engine::Math::Matrix4 rotation, float distance) :
 		BaseCollision()
 	{
 		this->distance = distance;
@@ -53,7 +53,7 @@ public:
 class Triangle : public BaseCollision
 {
 private: // エイリアス
-	using Vector3 = EngineMath::Vector3;
+	using Vector3 = Engine::Math::Vector3;
 
 public:
 	Vector3 p0 = Vector3();
@@ -81,7 +81,7 @@ public:
 struct Ray : BaseCollision
 {
 private: // エイリアス
-	using Vector3 = EngineMath::Vector3;
+	using Vector3 = Engine::Math::Vector3;
 
 public:
 	Vector3 start = Vector3();

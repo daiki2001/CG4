@@ -5,8 +5,8 @@ int DebugText::fontTex = -1;
 UINT64 DebugText::fontTexWidth = {};
 UINT DebugText::fontTexHeight = {};
 
-DebugText::DebugText(const DirectXInit* w) :
-	LoadTex(w),
+DebugText::DebugText() :
+	LoadTex(),
 	fontIndex{},
 	charCount(-1)
 {
@@ -19,10 +19,6 @@ DebugText::~DebugText()
 
 HRESULT DebugText::DrawStringInit()
 {
-//#ifndef _DEBUG
-//	return S_OK;
-//#endif // !_DEBUG
-
 	HRESULT hr = S_FALSE;
 	static bool isInit = false;
 
@@ -60,18 +56,14 @@ HRESULT DebugText::DrawStringInit()
 }
 
 HRESULT DebugText::DrawString(const float& posX, const float& posY,
-	const float& fontScale, const XMFLOAT4& color, const char* text, ...)
+							  const float& fontScale, const XMFLOAT4& color, const char* text, ...)
 {
-//#ifndef _DEBUG
-//	return S_OK;
-//#endif // !_DEBUG
-
 	using namespace DirectX;
 
 	HRESULT hr = S_FALSE;
 	static bool isDrawString = false;
-	static const char* string = nullptr;
-	static const char* numberString = (char*)malloc(sizeof(char) * 21);
+	static char* string = nullptr;
+	static char* numberString = static_cast<char*>(malloc(sizeof(char) * 21));
 	static char character = '\0';
 	static bool formatFlag = false;
 	va_list args;
@@ -96,10 +88,10 @@ HRESULT DebugText::DrawString(const float& posX, const float& posY,
 
 	// デスクリプタヒープをセット
 	ID3D12DescriptorHeap* ppHeaps[] = { texCommonData.descHeap.Get() };
-	w->cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 	// シェーダーリソースビューをセット
-	w->cmdList->SetGraphicsRootDescriptorTable(1, textrueData[fontTex].gpuDescHandle);
+	cmdList->SetGraphicsRootDescriptorTable(1, textrueData[fontTex].gpuDescHandle);
 
 	for (size_t i = 0, j = 0, k = 0; text[j] != '\0'; i++)
 	{
@@ -141,12 +133,12 @@ HRESULT DebugText::DrawString(const float& posX, const float& posY,
 					case 'd':
 						tempI = va_arg(args, int);
 						string = numberString;
-						sprintf_s((char*)string, 21, "%d", tempI);
+						sprintf_s(static_cast<char*>(string), 21, "%d", tempI);
 						break;
 					case 'f':
 						tempF = va_arg(args, double);
 						string = numberString;
-						sprintf_s((char*)string, 21, "%f", tempF);
+						sprintf_s(static_cast<char*>(string), 21, "%f", tempF);
 						break;
 					case 's':
 						string = va_arg(args, char*);
@@ -191,13 +183,13 @@ HRESULT DebugText::DrawString(const float& posX, const float& posY,
 		charCount++;
 
 		sprite[fontIndex[charCount]].size = { fontWidth * fontScale, fontHeight * fontScale };
-		sprite[fontIndex[charCount]].texLeftTop.x = (character % fontLineCount) * (float)fontWidth;
-		sprite[fontIndex[charCount]].texLeftTop.y = (character / fontLineCount) * (float)fontHeight;
+		sprite[fontIndex[charCount]].texLeftTop.x = (character % fontLineCount) * static_cast<float>(fontWidth);
+		sprite[fontIndex[charCount]].texLeftTop.y = static_cast<float>(character / fontLineCount) * static_cast<float>(fontHeight);
 		sprite[fontIndex[charCount]].texSize = { fontWidth, fontHeight };
 
 		enum Corner { LB, LT, RB, RT };
 
-		SpriteVertex vert[4];
+		SpriteVertex vert[4] = {};
 
 		float left = 0.0f;
 		float right = sprite[fontIndex[charCount]].size.x;
@@ -249,12 +241,12 @@ HRESULT DebugText::DrawString(const float& posX, const float& posY,
 		sprite[fontIndex[charCount]].constBuff->Unmap(0, nullptr);
 
 		// 定数バッファビューをセット
-		w->cmdList->SetGraphicsRootConstantBufferView(0, sprite[fontIndex[charCount]].constBuff->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(0, sprite[fontIndex[charCount]].constBuff->GetGPUVirtualAddress());
 
 		// 頂点バッファの設定
-		w->cmdList->IASetVertexBuffers(0, 1, &sprite[fontIndex[charCount]].vbView);
+		cmdList->IASetVertexBuffers(0, 1, &sprite[fontIndex[charCount]].vbView);
 		// 描画コマンド
-		w->cmdList->DrawInstanced(4, 1, 0, 0);
+		cmdList->DrawInstanced(4, 1, 0, 0);
 
 		if (formatFlag == true)
 		{

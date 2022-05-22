@@ -15,7 +15,7 @@ private: // 静的メンバ変数
 
 public: // メンバ関数
 	// コンストラクタ
-	DebugText(const DirectXInit* w);
+	DebugText();
 	// デストラクタ
 	~DebugText();
 
@@ -29,7 +29,7 @@ public: // メンバ関数
 	/// <param name="..."> 書式付き文字列に付随する引数 </param>
 	/// <returns> 0で成功 </returns>
 	HRESULT DrawString(const float& posX, const float& posY, const float& fontScale,
-		const XMFLOAT4& color, const char* text, ...);
+					   const XMFLOAT4& color, const char* text, ...);
 
 	// ループ終わり（デバッグテキスト版）
 	void TextLoopEnd();

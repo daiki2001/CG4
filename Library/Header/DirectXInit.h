@@ -11,25 +11,36 @@
 
 class DirectXInit final : public Win32API
 {
+private: //シングルトン化
+	// コンストラクタをprivateにする
+	DirectXInit();
+	// コピーコンストラクタを無効にする
+	DirectXInit(const DirectXInit& obj) = delete;
+	// デストラクタをprivateにする
+	~DirectXInit() {}
+	// 代入演算子を無効にする
+	DirectXInit operator=(const DirectXInit& obj) = delete;
+public:
+	// インスタンスの取得
+	static DirectXInit* GetInstance();
+
 protected: // エイリアス
 	// std::を省略
 	template<class T> using vector = std::vector<T>;
 	// Microsoft::WRL::を省略
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-private:
-	// コンストラクタをprivateにする
-	DirectXInit();
-	// デストラクタをprivateにする
-	~DirectXInit() {}
-public: // メンバ関数
-	// コピーコンストラクタを無効にする
-	DirectXInit(const DirectXInit& obj) = delete;
-	// 代入演算子を無効にする
-	const DirectXInit& operator=(const DirectXInit& obj) = delete;
-	// インスタンスの取得
-	static DirectXInit* GetInstance();
+public: // 静的メンバ関数
+	// D3D12デバイスの取得
+	static ID3D12Device* GetDevice() { return dev.Get(); };
+	// コマンドリストの取得
+	static ID3D12GraphicsCommandList* GetCommandList() { return cmdList.Get(); };
 
+private: // 静的メンバ変数
+	static ComPtr<ID3D12Device> dev; //D3D12デバイス
+	static ComPtr<ID3D12GraphicsCommandList> cmdList; //コマンドリスト
+
+public: // メンバ関数
 	// 初期化
 	HRESULT Init();
 
@@ -49,9 +60,6 @@ private:
 
 public: // メンバ変数
 	float clearColor[4]; //背景色
-
-	ComPtr<ID3D12Device> dev;
-	ComPtr<ID3D12GraphicsCommandList> cmdList;
 protected:
 	ComPtr<IDXGIFactory6> dxgiFactory;
 	ComPtr<IDXGISwapChain4> swapchain;

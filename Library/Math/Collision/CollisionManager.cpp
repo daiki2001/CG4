@@ -38,7 +38,7 @@ void CollisionManager::SphereSphere(BaseCollider* col1, BaseCollider* col2)
 {
 	Sphere* sphereA = dynamic_cast<Sphere*>(col1);
 	Sphere* sphereB = dynamic_cast<Sphere*>(col2);
-	EngineMath::Vector3 inter;
+	Engine::Math::Vector3 inter;
 
 	if (Collision::IsSphereToSphereCollision(*sphereA, *sphereB, &inter))
 	{

@@ -6,7 +6,7 @@ class BaseCollider;
 struct CollisionInfo
 {
 private: // エイリアス
-	using Vector3 = EngineMath::Vector3;
+	using Vector3 = Engine::Math::Vector3;
 
 public:
 	CollisionInfo(BaseCollider* collider, const Vector3& inter)

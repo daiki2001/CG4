@@ -60,8 +60,8 @@ int Player::CreateModel(const char* filePath, const char* directoryPath)
 
 	if (draw == nullptr)
 	{
-		ErrorLog("描画用オブジェクトがありません\n", true);
-		return EF;
+		Engine::ErrorLog("描画用オブジェクトがありません\n", true);
+		return Engine::functionError;
 	}
 
 	if (filePath == nullptr || directoryPath == nullptr)
