@@ -5,6 +5,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <DirectXTex.h>
+#include "./Camera.h"
 
 struct Node
 {
@@ -32,25 +33,42 @@ public: // サブクラス
 		Engine::Math::Vector3 normal; //法線ベクトル
 		DirectX::XMFLOAT2 uv;         //uv座標
 	};
+	// 定数バッファ用データ構造体
+	struct ConstBufferData
+	{
+		Engine::Math::Matrix4 viewProj;  //ビュープロジェクション行列
+		Engine::Math::Matrix4 world;     //ワールド行列
+		Engine::Math::Vector3 cameraPos; //カメラ座標
+	};
 
 private: // エイリアス
+	using Vector3 = Engine::Math::Vector3;
+	using Matrix4 = Engine::Math::Matrix4;
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 	template<class T> using vector = std::vector<T>;
 
+public: // 静的メンバ関数
+	static HRESULT CreateGraphicsPipeline();
+
 private: // 静的メンバ変数
 	static ID3D12Device* dev;
+
+	static ComPtr<ID3D12RootSignature> rootSignature; //ルートシグネチャ
+	static ComPtr<ID3D12PipelineState> pipelineState; //パイプラインステート
 
 public: // メンバ関数
 	Model();
 
 	void Init();
+	int Update();
 	void Draw();
 
 	// 各種バッファの生成
-	int CreateBuffers();
+	HRESULT CreateBuffers();
+	HRESULT CreateConstBuffer();
 
 	// 各種バッファの生成
-	const Engine::Math::Matrix4& GetModelTransform() { return meshNode->globalTransform; }
+	const Matrix4& GetModelTransform() { return meshNode->globalTransform; }
 
 private: // メンバ変数
 	std::string name;      //モデル名
@@ -66,10 +84,16 @@ private: // メンバ変数
 	ComPtr<ID3D12Resource> texBuff;           //テクスチャバッファ
 	D3D12_VERTEX_BUFFER_VIEW vbView;          //頂点バッファビュー
 	D3D12_INDEX_BUFFER_VIEW ibView;           //インデックスバッファビュー
+	ComPtr<ID3D12Resource> constBuff;         //定数バッファ
 	ComPtr<ID3D12DescriptorHeap> descHeapSRV; //SRV用デスクリプタヒープ
 
-	Engine::Math::Vector3 ambient;    //アンビエント係数
-	Engine::Math::Vector3 diffuse;    //ディフューズ係数
+	Vector3 ambient;                  //アンビエント係数
+	Vector3 diffuse;                  //ディフューズ係数
 	DirectX::TexMetadata metadata;    //テクスチャメタデータ
 	DirectX::ScratchImage scratchImg; //スクラッチイメージ
+
+	Vector3 pos;   //ローカル座標
+	Matrix4 rota;  //回転行列
+	Vector3 scale; //スケール
+	Matrix4 world; //ワールド行列
 };

@@ -37,7 +37,7 @@ public: // メンバ関数
 	void Finalize();
 
 	// ファイルからFBXモデル読み込み
-	void LoadModelFromFile(const string& modelPath);
+	Model* LoadModelFromFile(const string& modelPath);
 private:
 	// 再帰的にノード構成を解析
 	void ParseNodeRecursive(Model* model, FbxNode* fbxNode, Node* parent = nullptr);

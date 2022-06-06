@@ -1,8 +1,7 @@
 #pragma once
 #include "DebugText.h"
 #include <d3dx12.h>
-
-#define MAIN_CAMERA (0)
+#include "./Header/Camera.h"
 
 #define scale_xyz(_scale) DirectX::XMFLOAT3(_scale, _scale, _scale)
 
@@ -53,11 +52,6 @@ public: // メンバ関数
 
 	// カメラの作成
 	int CreateCamera(const XMFLOAT3& cameraPos, const XMFLOAT3& cameraTarget, const XMFLOAT3& upVector);
-	// カメラの設定
-	void SetCamera(const XMFLOAT3& cameraPos, const XMFLOAT3& cameraTarget, const XMFLOAT3& upVector,
-				   const int& cameraNo = MAIN_CAMERA);
-	// カメラの切り替え
-	void ChangeCamera(const int& cameraNo);
 
 	// スクリーン座標からワールド座標を求める
 	DirectX::XMFLOAT3 ScreenToWorld(int x, int y, float z);
@@ -90,9 +84,6 @@ private:
 	size_t loopCount; //ループした回数
 
 	XMFLOAT3 lightVec; //光線
-
-	vector<XMMATRIX> matView; //ビュー変換行列(カメラ)
-	int cameraNo;             //カメラの番号（最初はMAIN_CAMERAを指している）
 
 	size_t objModelCount; //objファイルから読み込んだモデルの数
 	vector<size_t> verticesCount; //

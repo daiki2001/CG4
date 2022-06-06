@@ -1,7 +1,8 @@
 #include "./Header/DirectXInit.h"
 #include "./Header/DrawPolygon.h"
+#include "./Header/Camera.h"
 #include "./Header/Input.h"
-#include "./Math/Collision/Collision.h"
+//#include "./Math/Collision/Collision.h"
 #include "./Header/SceneManager.h"
 
 /*ウィンドウサイズ*/
@@ -26,6 +27,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 
 	DrawPolygon draw();
 
+	Camera::Init();
 	Input::Init();
 
 	SceneManager sceneManager;

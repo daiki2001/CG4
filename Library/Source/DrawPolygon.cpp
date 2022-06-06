@@ -1,9 +1,9 @@
 #include "./Header/DrawPolygon.h"
-#include "./Header/Camera.h"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include "./Header/DirectXInit.h"
+#include "./Header/Error.h"
 
 #define EoF -1 // End of Function
 
@@ -13,7 +13,6 @@ DrawPolygon::DrawPolygon() :
 	loopCount(0),
 	lightVec{},
 	light(100, -100, 100),
-	cameraNo(MAIN_CAMERA),
 	objModelCount(0),
 	verticesCount{},
 	material{}
@@ -23,12 +22,6 @@ DrawPolygon::DrawPolygon() :
 	XMFLOAT3 cameraPos = { 0, 0, -100 };
 	XMFLOAT3 cameraTarget = { 0, 0, 0 };
 	XMFLOAT3 upVector = { 0, 1, 0 };
-
-	matView.push_back(Camera::CreateCamera(
-		XMLoadFloat3(&cameraPos),
-		XMLoadFloat3(&cameraTarget),
-		XMLoadFloat3(&upVector)
-	));
 }
 
 DrawPolygon::~DrawPolygon()
@@ -1097,7 +1090,7 @@ int DrawPolygon::Draw(
 
 	if (viewMultiFlag == true)
 	{
-		mat = matView[cameraNo];
+		mat = Camera::GetMatView();
 	}
 	else
 	{
@@ -1228,7 +1221,7 @@ int DrawPolygon::DrawOBJ(const int& object, const XMFLOAT3& position, const XMMA
 
 	if (viewMultiFlag == true)
 	{
-		mat = matView[cameraNo];
+		mat = Camera::GetMatView();
 	}
 	else
 	{
@@ -1307,40 +1300,13 @@ int DrawPolygon::CreateCamera(const XMFLOAT3& cameraPos, const XMFLOAT3& cameraT
 {
 	using namespace DirectX;
 
-	matView.push_back(Camera::CreateCamera(
+	Camera::matView.push_back(Camera::CreateCamera(
 		XMLoadFloat3(&cameraPos),
 		XMLoadFloat3(&cameraTarget),
 		XMLoadFloat3(&upVector)
 	));
 
-	return (int)matView.size() - 1;
-}
-
-void DrawPolygon::SetCamera(const XMFLOAT3& cameraPos, const XMFLOAT3& cameraTarget, const XMFLOAT3& upVector,
-	const int& cameraNo)
-{
-	if (cameraNo < 0 || (size_t)cameraNo >= matView.size())
-	{
-		return;
-	}
-
-	using namespace DirectX;
-
-	matView[cameraNo] = Camera::CreateCamera(
-		XMLoadFloat3(&cameraPos),
-		XMLoadFloat3(&cameraTarget),
-		XMLoadFloat3(&upVector)
-	);
-}
-
-void DrawPolygon::ChangeCamera(const int& cameraNo)
-{
-	if (cameraNo < 0 || (size_t)cameraNo >= matView.size())
-	{
-		return;
-	}
-
-	this->cameraNo = cameraNo;
+	return (int)Camera::matView.size() - 1;
 }
 
 DirectX::XMFLOAT3 DrawPolygon::ScreenToWorld(int x, int y, float z)
@@ -1351,7 +1317,7 @@ DirectX::XMFLOAT3 DrawPolygon::ScreenToWorld(int x, int y, float z)
 	XMFLOAT3 screen = { (float)x, (float)y, z };
 	XMMATRIX InvView, InvPrj, VP, InvViewport;
 
-	InvView = XMMatrixInverse(nullptr, matView[cameraNo]);
+	InvView = XMMatrixInverse(nullptr, Camera::matView[Camera::cameraNo]);
 	InvPrj = XMMatrixInverse(nullptr, objectData[isDepthWriteBan].matProjection[CommonData::Projection::PERSPECTIVE]);
 	VP = XMMatrixIdentity();
 	VP.r[0].m128_f32[0] =
@@ -1372,7 +1338,7 @@ DirectX::XMFLOAT3 DrawPolygon::ScreenToWorld(int x, int y, float z)
 
 DirectX::XMMATRIX DrawPolygon::InverseView()
 {
-	DirectX::XMMATRIX invView = DirectX::XMMatrixInverse(nullptr, matView[cameraNo]);
+	DirectX::XMMATRIX invView = DirectX::XMMatrixInverse(nullptr, Camera::matView[Camera::cameraNo]);
 	invView.r[3].m128_f32[0] = 0.0f;
 	invView.r[3].m128_f32[1] = 0.0f;
 	invView.r[3].m128_f32[2] = 0.0f;
@@ -1390,7 +1356,7 @@ void DrawPolygon::PolygonLoopEnd()
 
 void DrawPolygon::DataClear()
 {
-	matView.clear();
+	Camera::matView.clear();
 	verticesCount.clear();
 	material.clear();
 }
