@@ -34,6 +34,7 @@ public: // フレンドクラス
 
 public: // 定数
 	static const int MAX_BONE_INDICES = 4;
+	static const int MAX_BONE = 32;
 
 public: // サブクラス
 	// 頂点データ構造体
@@ -59,6 +60,11 @@ public: // サブクラス
 		std::string name = {};                          //名前
 		Matrix4 invInitPose = Engine::Math::Identity(); //初期姿勢の逆行列
 		FbxCluster* fbxCluster = nullptr;               //クラスター
+	};
+	// 定数バッファ用データ構造体(スキニング)
+	struct ConstBufferDataSkin
+	{
+		Matrix4 bones[MAX_BONE]; //ボーンのスキニング行列
 	};
 
 private: // 静的メンバ変数
@@ -90,6 +96,7 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vbView;          //頂点バッファビュー
 	D3D12_INDEX_BUFFER_VIEW ibView;           //インデックスバッファビュー
 	ComPtr<ID3D12Resource> constBuff;         //定数バッファ
+	ComPtr<ID3D12Resource> constBuffSkin;     //定数バッファ(スキン)
 	ComPtr<ID3D12DescriptorHeap> descHeapSRV; //SRV用デスクリプタヒープ
 
 	Vector3 ambient;                  //アンビエント係数
