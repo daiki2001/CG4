@@ -3,10 +3,13 @@
 #include "./Header/Input.h"
 #include "./Header/Camera.h"
 
+#include "./Header/Error.h"
+
 TestScene::TestScene(SceneChenger* sceneChenger) :
 	BaseScene(sceneChenger),
 	fbxLoader(FbxLoader::GetInstance()),
-	background(-1)
+	background(Engine::functionError),
+	fbxModel(Engine::functionError)
 {
 	Init();
 }
@@ -22,9 +25,9 @@ void TestScene::Init()
 	using namespace Engine::Math;
 
 	fbxLoader->Init();
-	fbxModel = std::unique_ptr<Model>(fbxLoader->LoadModelFromFile("./Resources/cube/cube.fbx"));
-	fbxModel->CreateConstBuffer();
-	fbxModel->Init();
+	fbxModel = fbxLoader->LoadModelFromFile("./Resources/cube/cube.fbx");
+	fbxLoader->GetModel(fbxModel)->CreateConstBuffer();
+	fbxLoader->GetModel(fbxModel)->Init();
 
 	// ‰æ‘œ‚Ì“Ç‚İ‚İ
 	background = draw.LoadTextrue(L"./Resources/background.png");
@@ -36,6 +39,8 @@ void TestScene::Init()
 	Camera::pos = {};
 	Camera::target = { 0.0f, 50.0f, 0.0f };
 	Camera::upVec = { 0.0f, 1.0f, 0.0f };
+
+	fbxLoader->GetModel(fbxModel)->pos = { 0.0f, 0.0f, -10.0f };
 }
 
 void TestScene::Update()
@@ -43,6 +48,13 @@ void TestScene::Update()
 	using namespace DirectX;
 	using namespace Engine::Math;
 	using namespace Collision;
+
+	if (Input::IsKey(DIK_R))
+	{
+		Camera::targetRadius = 150.0f;
+		Camera::longitude = degree * (-90.0f);
+		Camera::latitude = degree * (0.0f);
+	}
 
 	if (Input::IsKey(DIK_A))
 	{
@@ -97,7 +109,7 @@ void TestScene::Update()
 	Camera::pos += Camera::target;
 	Camera::SetCamera(Camera::pos, Camera::target, Camera::upVec);
 
-	fbxModel->Update();
+	fbxLoader->GetModel(fbxModel)->Update();
 }
 
 void TestScene::Draw()
@@ -121,7 +133,7 @@ void TestScene::Draw()
 		XMFLOAT2(0.0f, 0.0f)
 	);
 
-	fbxModel->Draw();
+	fbxLoader->GetModel(fbxModel)->Draw();
 
 	// ƒ‹[ƒv‚ÌI—¹ˆ—
 	draw.PolygonLoopEnd();

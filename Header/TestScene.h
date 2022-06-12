@@ -31,5 +31,5 @@ private: // メンバ変数
 	int background; //背景画像
 
 	// オブジェクトの生成
-	std::unique_ptr<Model> fbxModel; //FBXモデル
+	int fbxModel; //FBXモデル
 };

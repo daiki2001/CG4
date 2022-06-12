@@ -6,6 +6,8 @@
 #include <string>
 #include "Model.h"
 
+#include "./Math/EngineMath.h"
+
 class FbxLoader
 {
 public:
@@ -17,7 +19,7 @@ public:
 
 private:
 	// privateなコンストラクタ（シングルトンパターン）
-	FbxLoader() = default;
+	FbxLoader();
 	// privateなデストラクタ（シングルトンパターン）
 	~FbxLoader() = default;
 	// コピーコンストラクタを禁止（シングルトンパターン）
@@ -29,6 +31,17 @@ private: // エイリアス
 	using string = std::string;
 
 public: // 定数
+	
+public: // 静的メンバ関数
+	static Engine::Math::Matrix4 ConvertMatrixFromFbx(const FbxAMatrix& src);
+
+private: // メンバ変数
+	ID3D12Device* device; //D3D12デバイス
+
+	FbxManager* fbxManger;    //FBXマネージャー
+	FbxImporter* fbxImporter; //FBXインポーター
+
+	std::vector<std::unique_ptr<Model>> models; //モデルの配列
 
 public: // メンバ関数
 	// 初期化
@@ -37,7 +50,10 @@ public: // メンバ関数
 	void Finalize();
 
 	// ファイルからFBXモデル読み込み
-	Model* LoadModelFromFile(const string& modelPath);
+	int LoadModelFromFile(const string& modelPath);
+
+	// モデルの取得
+	Model* GetModel(int index);
 private:
 	// 再帰的にノード構成を解析
 	void ParseNodeRecursive(Model* model, FbxNode* fbxNode, Node* parent = nullptr);
@@ -46,15 +62,12 @@ private:
 
 	// 頂点座標読み取り
 	void ParseMeshVertices(Model* model, FbxMesh* fbxMesh);
-	// 面情報読み取り
+	// 面を構成するデータの読み取り
 	void ParseMeshFaces(Model* model, FbxMesh* fbxMesh);
-	// マテリアル読み取り
+	// マテリアルの読み取り
 	void ParseMaterial(Model* model, FbxNode* fbxNode);
-	// テクスチャ読み取り
+	// テクスチャ読み込み
 	void LoadTexture(Model* model, const string& fullpath);
-
-private: // メンバ変数
-	ID3D12Device* device = nullptr; //D3D12デバイス
-	FbxManager* fbxManger = nullptr; //FBXマネージャー
-	FbxImporter* fbxImporter = nullptr; //FBXインポーター
+	// スキニング情報の読み取り
+	int ParseSkin(Model* model, FbxMesh* fbxMesh);
 };

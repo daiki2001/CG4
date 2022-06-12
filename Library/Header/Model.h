@@ -1,10 +1,11 @@
 #pragma once
-#include <string>
-#include <vector>
-#include "./Math/EngineMath.h"
 #include <d3d12.h>
 #include <wrl.h>
+#include <fbxsdk.h>
+#include <string>
+#include <vector>
 #include <DirectXTex.h>
+#include "./Math/EngineMath.h"
 #include "./Camera.h"
 
 struct Node
@@ -22,33 +23,43 @@ struct Node
 
 class Model
 {
-public: // フレンドクラス
-	friend class FbxLoader;
-
-public: // サブクラス
-	// 頂点データ構造体
-	struct VertexPosNormalUv
-	{
-		Engine::Math::Vector3 pos;    //xyz座標
-		Engine::Math::Vector3 normal; //法線ベクトル
-		DirectX::XMFLOAT2 uv;         //uv座標
-	};
-	// 定数バッファ用データ構造体
-	struct ConstBufferData
-	{
-		Engine::Math::Matrix4 viewProj;  //ビュープロジェクション行列
-		Engine::Math::Matrix4 world;     //ワールド行列
-		Engine::Math::Vector3 cameraPos; //カメラ座標
-	};
-
 private: // エイリアス
 	using Vector3 = Engine::Math::Vector3;
 	using Matrix4 = Engine::Math::Matrix4;
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 	template<class T> using vector = std::vector<T>;
 
-public: // 静的メンバ関数
-	static HRESULT CreateGraphicsPipeline();
+public: // フレンドクラス
+	friend class FbxLoader;
+
+public: // 定数
+	static const int MAX_BONE_INDICES = 4;
+
+public: // サブクラス
+	// 頂点データ構造体
+	struct VertexPosNormalUvSkin
+	{
+		Vector3 pos;          //xyz座標
+		Vector3 normal;       //法線ベクトル
+		DirectX::XMFLOAT2 uv; //uv座標
+
+		UINT boneIndex[MAX_BONE_INDICES];   //ボーン 番号
+		float boneWeight[MAX_BONE_INDICES]; //ボーン 重み
+	};
+	// 定数バッファ用データ構造体
+	struct ConstBufferData
+	{
+		Matrix4 viewProj;  //ビュープロジェクション行列
+		Matrix4 world;     //ワールド行列
+		Vector3 cameraPos; //カメラ座標
+	};
+	// ボーン構造体
+	struct Bone
+	{
+		std::string name = {};                          //名前
+		Matrix4 invInitPose = Engine::Math::Identity(); //初期姿勢の逆行列
+		FbxCluster* fbxCluster = nullptr;               //クラスター
+	};
 
 private: // 静的メンバ変数
 	static ID3D12Device* dev;
@@ -56,28 +67,22 @@ private: // 静的メンバ変数
 	static ComPtr<ID3D12RootSignature> rootSignature; //ルートシグネチャ
 	static ComPtr<ID3D12PipelineState> pipelineState; //パイプラインステート
 
-public: // メンバ関数
-	Model();
+public: // 静的メンバ関数
+	static HRESULT CreateGraphicsPipeline();
 
-	void Init();
-	int Update();
-	void Draw();
-
-	// 各種バッファの生成
-	HRESULT CreateBuffers();
-	HRESULT CreateConstBuffer();
-
-	// 各種バッファの生成
-	const Matrix4& GetModelTransform() { return meshNode->globalTransform; }
-
-private: // メンバ変数
+public: // メンバ変数
+	Vector3 pos;   //ローカル座標
+	Matrix4 rota;  //回転行列
+	Vector3 scale; //スケール
+	Matrix4 world; //ワールド行列
+private:
 	std::string name;      //モデル名
 	std::string directory; //モデルがあるディレクトリパス
 	vector<Node> nodes;    //ノード配列
 
-	Node* meshNode;                     //メッシュを持つノード
-	vector<VertexPosNormalUv> vertices; //頂点データ配列
-	vector<unsigned short> indices;     //頂点インデックス配列
+	Node* meshNode;                         //メッシュを持つノード
+	vector<VertexPosNormalUvSkin> vertices; //頂点データ配列
+	vector<unsigned short> indices;         //頂点インデックス配列
 
 	ComPtr<ID3D12Resource> vertBuff;          //頂点バッファ
 	ComPtr<ID3D12Resource> indexBuff;         //インデックスバッファ
@@ -92,8 +97,28 @@ private: // メンバ変数
 	DirectX::TexMetadata metadata;    //テクスチャメタデータ
 	DirectX::ScratchImage scratchImg; //スクラッチイメージ
 
-	Vector3 pos;   //ローカル座標
-	Matrix4 rota;  //回転行列
-	Vector3 scale; //スケール
-	Matrix4 world; //ワールド行列
+	vector<Bone> bones; //ボーン配列
+
+	FbxScene* fbxScene; //FBXシーン
+
+public: // メンバ関数
+	Model();
+	~Model();
+
+	// 初期化
+	void Init();
+	// 更新処理
+	int Update();
+	// 描画
+	void Draw();
+	// 終了処理
+	void Finalize();
+
+	// 各種バッファの生成
+	HRESULT CreateBuffers();
+	HRESULT CreateConstBuffer();
+
+	const Matrix4& GetModelTransform() { return meshNode->globalTransform; }
+	vector<Bone>& GetBones() { return bones; }
+	FbxScene* GetFbxScene() { return fbxScene; }
 };

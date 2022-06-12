@@ -35,6 +35,11 @@ Model::Model() :
 	Init();
 }
 
+Model::~Model()
+{
+	Finalize();
+}
+
 HRESULT Model::CreateGraphicsPipeline()
 {
 	HRESULT hr = S_FALSE;
@@ -278,6 +283,15 @@ void Model::Draw()
 
 }
 
+void Model::Finalize()
+{
+	if (fbxScene != nullptr)
+	{
+		fbxScene->Destroy();
+		fbxScene = nullptr;
+	}
+}
+
 HRESULT Model::CreateBuffers()
 {
 	using namespace Engine;
@@ -286,7 +300,7 @@ HRESULT Model::CreateBuffers()
 
 #pragma region CreateVertexBuffer
 	// 頂点データ全体のサイズ
-	UINT sizeVB = static_cast<UINT>(sizeof(VertexPosNormalUv) * vertices.size());
+	UINT sizeVB = static_cast<UINT>(sizeof(VertexPosNormalUvSkin) * vertices.size());
 	// 頂点バッファの生成
 	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
@@ -301,7 +315,7 @@ HRESULT Model::CreateBuffers()
 	}
 
 	// 頂点バッファへのデータ転送
-	VertexPosNormalUv* vertMap = nullptr;
+	VertexPosNormalUvSkin* vertMap = nullptr;
 	hr = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	if (SUCCEEDED(hr))
 	{
