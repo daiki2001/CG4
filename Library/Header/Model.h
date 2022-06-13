@@ -81,6 +81,12 @@ public: // メンバ変数
 	Matrix4 rota;  //回転行列
 	Vector3 scale; //スケール
 	Matrix4 world; //ワールド行列
+
+	FbxTime frameTime;   //1フレームの時間
+	FbxTime startTime;   //アニメーション開始時間
+	FbxTime endTime;     //アニメーション終了時間
+	FbxTime currentTime; //現在時間
+	bool isPlay;         //アニメーション再生中
 private:
 	std::string name;      //モデル名
 	std::string directory; //モデルがあるディレクトリパス
@@ -124,6 +130,9 @@ public: // メンバ関数
 	// 各種バッファの生成
 	HRESULT CreateBuffers();
 	HRESULT CreateConstBuffer();
+
+	// アニメーション開始
+	void PlayAnimation();
 
 	const Matrix4& GetModelTransform() { return meshNode->globalTransform; }
 	vector<Bone>& GetBones() { return bones; }

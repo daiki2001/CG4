@@ -91,6 +91,7 @@ int FbxLoader::LoadModelFromFile(const string& modelPath)
 	// FBXノードの数を取得
 	int nodeCount = fbxScene->GetNodeCount();
 	models.back()->nodes.reserve(nodeCount);
+	models.back()->CreateConstBuffer();
 	// ルートノードから順に解析してモデルに流し込む
 	ParseNodeRecursive(models.back().get(), fbxScene->GetRootNode());
 	// バッファの生成
@@ -366,7 +367,7 @@ void FbxLoader::LoadTexture(Model* model, const string& fullpath)
 	ErrorLog("テクスチャの読み込み失敗\n", FAILED(hr));
 }
 
-int FbxLoader::ParseSkin(Model* model, FbxMesh* fbxMesh)
+void FbxLoader::ParseSkin(Model* model, FbxMesh* fbxMesh)
 {
 	using namespace Engine::Math;
 
@@ -376,7 +377,15 @@ int FbxLoader::ParseSkin(Model* model, FbxMesh* fbxMesh)
 	// スキニング情報が無ければ終了
 	if (fbxSkin == nullptr)
 	{
-		return Engine::functionError;
+		// 各頂点についての処理
+		for (int i = 0; i < model->vertices.size(); i++)
+		{
+			// 最初のボーンの影響度を100%にする
+			model->vertices[i].boneIndex[0] = 0;
+			model->vertices[i].boneWeight[0] = 1.0f;
+		}
+
+		return;
 	}
 
 	// ボーン配列の参照
@@ -479,6 +488,4 @@ int FbxLoader::ParseSkin(Model* model, FbxMesh* fbxMesh)
 			}
 		}
 	}
-
-	return 0;
 }

@@ -25,22 +25,22 @@ void TestScene::Init()
 	using namespace Engine::Math;
 
 	fbxLoader->Init();
-	fbxModel = fbxLoader->LoadModelFromFile("./Resources/boneTest.fbx");
-	fbxLoader->GetModel(fbxModel)->CreateConstBuffer();
+	fbxModel = fbxLoader->LoadModelFromFile("./Resources/cube/cube.fbx");
 	fbxLoader->GetModel(fbxModel)->Init();
 
 	// ‰æ‘œ‚Ì“Ç‚Ýž‚Ý
 	background = draw.LoadTextrue(L"./Resources/background.png");
 
-	Camera::targetRadius = 50.0f;
+	Camera::targetRadius = 150.0f;
 	Camera::longitude = degree * (-90.0f);
 	Camera::latitude = degree * (0.0f);
 
 	Camera::pos = {};
-	Camera::target = { 0.0f, 0.0f, 0.0f };
+	Camera::target = { 0.0f, 50.0f, 0.0f };
 	Camera::upVec = { 0.0f, 1.0f, 0.0f };
 
 	fbxLoader->GetModel(fbxModel)->pos = { 0.0f, 0.0f, -10.0f };
+	//fbxLoader->GetModel(fbxModel)->PlayAnimation();
 }
 
 void TestScene::Update()

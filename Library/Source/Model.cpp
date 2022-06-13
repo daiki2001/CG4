@@ -32,7 +32,12 @@ Model::Model() :
 	pos(0.0f, 0.0f, 0.0f),
 	rota(Engine::Math::Identity()),
 	scale(1.0f, 1.0f, 1.0f),
-	world(Engine::Math::Identity())
+	world(Engine::Math::Identity()),
+	frameTime{},
+	startTime{},
+	endTime{},
+	currentTime{},
+	isPlay(false)
 {
 	Init();
 }
@@ -230,11 +235,23 @@ void Model::Init()
 	{
 		assert(0);
 	}
+
+	frameTime.SetTime(0, 0, 0, 1, 0, FbxTime::EMode::eFrames60);
 }
 
 int Model::Update()
 {
 	using namespace Engine::Math;
+
+	if (isPlay)
+	{
+		currentTime += frameTime;
+
+		if (currentTime >= endTime)
+		{
+			currentTime = startTime;
+		}
+	}
 
 	world = Identity();
 	world *= Engine::Math::scale(scale);
@@ -265,13 +282,18 @@ int Model::Update()
 		for (int i = 0; i < bones.size(); i++)
 		{
 			// 今の姿勢行列を取得
-			FbxAMatrix fbxCurrentPose = bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(0);
+			FbxAMatrix fbxCurrentPose =
+				bones[i].fbxCluster->GetLink()->EvaluateGlobalTransform(currentTime);
 			// Matrix4型に変換
 			Matrix4 matCurrentPose = FbxLoader::ConvertMatrixFromFbx(fbxCurrentPose);
 			// 合成してスキニング行列に
-			constMapSkin->bones[i] = bones[i].invInitPose * matCurrentPose;
+			constMapSkin->bones[i] =
+				modelTrans *
+				bones[i].invInitPose *
+				matCurrentPose *
+				Inverse(modelTrans);
 		}
-		constBuff->Unmap(0, nullptr);
+		constBuffSkin->Unmap(0, nullptr);
 	}
 
 	return 0;
@@ -478,6 +500,19 @@ HRESULT Model::CreateConstBuffer()
 	{
 		return hr;
 	}
+	ConstBufferData* constMap = nullptr;
+	hr = constBuff->Map(0, nullptr, (void**)&constMap);
+	if (SUCCEEDED(hr))
+	{
+		for (int i = 0; i < bones.size(); i++)
+		{
+			constMap->viewProj = Engine::Math::Identity();
+			constMap->world = Engine::Math::Identity();
+			constMap->cameraPos = Engine::Math::Vector3();
+		}
+		constBuff->Unmap(0, nullptr);
+	}
+
 	hr = dev->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
 		D3D12_HEAP_FLAG_NONE,
@@ -489,6 +524,35 @@ HRESULT Model::CreateConstBuffer()
 	{
 		return hr;
 	}
+	ConstBufferDataSkin* constMapSkin = nullptr;
+	hr = constBuffSkin->Map(0, nullptr, (void**)&constMapSkin);
+	if (SUCCEEDED(hr))
+	{
+		for (int i = 0; i < MAX_BONE; i++)
+		{
+			constMapSkin->bones[i] = Engine::Math::Identity();
+		}
+		constBuffSkin->Unmap(0, nullptr);
+	}
 
 	return S_OK;
+}
+
+void Model::PlayAnimation()
+{
+	// 0番のアニメーションを取得
+	FbxAnimStack* animStack = fbxScene->GetSrcObject<FbxAnimStack>(0);
+	// アニメーションの名前取得
+	const char* animStackName = animStack->GetName();
+	// アニメーションの時間情報
+	FbxTakeInfo* takeInfo = fbxScene->GetTakeInfo(animStackName);
+
+	// 開始時間取得
+	startTime = takeInfo->mLocalTimeSpan.GetStart();
+	// 終了時間取得
+	endTime = takeInfo->mLocalTimeSpan.GetStop();
+	// 開始時間に合わせる
+	currentTime = startTime;
+	// 再生中状態にする
+	isPlay = true;
 }

@@ -69,5 +69,5 @@ private:
 	// テクスチャ読み込み
 	void LoadTexture(Model* model, const string& fullpath);
 	// スキニング情報の読み取り
-	int ParseSkin(Model* model, FbxMesh* fbxMesh);
+	void ParseSkin(Model* model, FbxMesh* fbxMesh);
 };
