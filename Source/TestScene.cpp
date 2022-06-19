@@ -8,10 +8,12 @@
 TestScene::TestScene(SceneChenger* sceneChenger) :
 	BaseScene(sceneChenger),
 	fbxLoader(FbxLoader::GetInstance()),
-	background(Engine::functionError),
-	fbxModel(Engine::functionError)
+	background(Engine::FUNCTION_ERROR),
+	fbxModel(Engine::FUNCTION_ERROR),
+	postEffect{}
 {
 	Init();
+	postEffect.Init();
 }
 
 TestScene::~TestScene()
@@ -25,22 +27,22 @@ void TestScene::Init()
 	using namespace Engine::Math;
 
 	fbxLoader->Init();
-	fbxModel = fbxLoader->LoadModelFromFile("./Resources/cube/cube.fbx");
+	fbxModel = fbxLoader->LoadModelFromFile("./Resources/boneTest.fbx");
 	fbxLoader->GetModel(fbxModel)->Init();
 
 	// ‰æ‘œ‚Ì“Ç‚İ‚İ
 	background = draw.LoadTextrue(L"./Resources/background.png");
 
-	Camera::targetRadius = 150.0f;
-	Camera::longitude = degree * (-90.0f);
+	Camera::targetRadius = 10.0f;
+	Camera::longitude = degree * (0.0f);
 	Camera::latitude = degree * (0.0f);
 
-	Camera::pos = {};
-	Camera::target = { 0.0f, 50.0f, 0.0f };
+	Camera::pos = { 0.0f, 0.0f, -10.0f };
+	Camera::target = { 0.0f, 2.5f, 0.0f };
 	Camera::upVec = { 0.0f, 1.0f, 0.0f };
 
-	fbxLoader->GetModel(fbxModel)->pos = { 0.0f, 0.0f, -10.0f };
-	//fbxLoader->GetModel(fbxModel)->PlayAnimation();
+	fbxLoader->GetModel(fbxModel)->pos = { 0.0f, 0.0f, 0.0f };
+	fbxLoader->GetModel(fbxModel)->PlayAnimation();
 }
 
 void TestScene::Update()
@@ -51,8 +53,8 @@ void TestScene::Update()
 
 	if (Input::IsKey(DIK_R))
 	{
-		Camera::targetRadius = 150.0f;
-		Camera::longitude = degree * (-90.0f);
+		Camera::targetRadius = 20.0f;
+		Camera::longitude = degree * (0.0f);
 		Camera::latitude = degree * (0.0f);
 	}
 
@@ -123,17 +125,18 @@ void TestScene::Draw()
 	draw.SetDrawBlendMode(BLENDMODE_ALPHA);
 
 	// ”wŒi
-	draw.DrawTextrue(
-		0.0f,
-		0.0f,
-		(float)w->windowWidth,
-		(float)w->windowHeight,
-		0.0f,
-		background,
-		XMFLOAT2(0.0f, 0.0f)
-	);
+	//draw.DrawTextrue(
+	//	0.0f,
+	//	0.0f,
+	//	(float)w->windowWidth,
+	//	(float)w->windowHeight,
+	//	0.0f,
+	//	background,
+	//	XMFLOAT2(0.0f, 0.0f)
+	//);
 
-	fbxLoader->GetModel(fbxModel)->Draw();
+	//fbxLoader->GetModel(fbxModel)->Draw();
+	postEffect.Draw();
 
 	// ƒ‹[ƒv‚ÌI—¹ˆ—
 	draw.PolygonLoopEnd();

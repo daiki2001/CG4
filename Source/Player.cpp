@@ -61,7 +61,7 @@ int Player::CreateModel(const char* filePath, const char* directoryPath)
 	if (draw == nullptr)
 	{
 		Engine::ErrorLog("描画用オブジェクトがありません\n", true);
-		return Engine::functionError;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	if (filePath == nullptr || directoryPath == nullptr)

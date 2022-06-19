@@ -4,8 +4,7 @@
 #include "./Math/Collision/BaseCollider.h"
 #include "./Math/Collision/CollisionManager.h"
 #include "./Header/SafeDelete.h"
-
-#define EoF -1 // End of Function
+#include "./Header/Error.h"
 
 CommonData::CommonData() :
 	pipelinestate{},
@@ -66,8 +65,6 @@ void Object::SetCollider(BaseCollider* collider)
 }
 
 /*static変数の初期化*/
-ID3D12Device* DirectDrawing::dev = DirectXInit::GetDevice();
-ID3D12GraphicsCommandList* DirectDrawing::cmdList = DirectXInit::GetCommandList();
 CommonData DirectDrawing::spriteData = {};
 DirectDrawing::vector<Sprite> DirectDrawing::sprite = {};
 DirectDrawing::vector<DirectDrawing::IndexData> DirectDrawing::spriteIndex = {};
@@ -136,8 +133,6 @@ HRESULT DirectDrawing::Init()
 {
 	HRESULT hr = S_FALSE;
 
-	dev = DirectXInit::GetDevice();
-
 	hr = DrawingInit();
 	if (FAILED(hr))
 	{
@@ -169,6 +164,8 @@ HRESULT DirectDrawing::DrawingInit()
 	{
 		return S_OK;
 	}
+
+	static auto* dev = DirectXInit::GetDevice();
 
 	isDrawingInit = true;
 
@@ -354,7 +351,7 @@ HRESULT DirectDrawing::DrawingInit()
 				blendDesc.DestBlend = D3D12_BLEND_ZERO;          //使わない
 				goto BaseBlendState;
 			default:
-BaseBlendState:
+			BaseBlendState:
 				/*共通設定*/
 				blendDesc.BlendEnable = true;                //ブレンドを有効にする
 				blendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD; //加算
@@ -397,6 +394,8 @@ HRESULT DirectDrawing::MaterialInit()
 	{
 		return S_OK;
 	}
+
+	static auto* dev = DirectXInit::GetDevice();
 
 	isMaterialInit = true;
 
@@ -584,7 +583,7 @@ HRESULT DirectDrawing::MaterialInit()
 				materialBlendDesc.DestBlend = D3D12_BLEND_ZERO;          //使わない
 				goto MaterialBaseBlend;
 			default:
-MaterialBaseBlend:
+			MaterialBaseBlend:
 				/*共通設定*/
 				materialBlendDesc.BlendEnable = true;                //ブレンドを有効にする
 				materialBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD; //加算
@@ -628,6 +627,8 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 	{
 		return S_OK;
 	}
+
+	static auto* dev = DirectXInit::GetDevice();
 
 	isSpriteDrawingInit = true;
 
@@ -797,7 +798,7 @@ HRESULT DirectDrawing::SpriteDrawingInit()
 			spriteBlendDesc.DestBlend = D3D12_BLEND_ZERO;          //使わない
 			goto SpriteBaseBlend;
 		default:
-SpriteBaseBlend:
+		SpriteBaseBlend:
 			/*共通設定*/
 			spriteBlendDesc.BlendEnable = true;                //ブレンドを有効にする
 			spriteBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD; //加算
@@ -825,9 +826,13 @@ SpriteBaseBlend:
 		spritePipeline.pRootSignature = spriteData.rootsignature.Get();
 
 		hr = dev->CreateGraphicsPipelineState(&spritePipeline, IID_PPV_ARGS(&spriteData.pipelinestate[i]));
+		if (FAILED(hr))
+		{
+			return hr;
+		}
 	}
 
-	return hr;
+	return S_OK;
 }
 
 int DirectDrawing::CreateVertexAndIndexBuffer()
@@ -837,8 +842,10 @@ int DirectDrawing::CreateVertexAndIndexBuffer()
 	// 'vertexNum'が0以下なら生成せずにリターンする
 	if (vertices.size() <= 0 || vertices[vertices.size() - 1].vertices.size() <= 0)
 	{
-		return EoF;
+		return Engine::FUNCTION_ERROR;
 	}
+
+	static auto* dev = DirectXInit::GetDevice();
 
 #pragma region VertexBuffer
 
@@ -855,7 +862,7 @@ int DirectDrawing::CreateVertexAndIndexBuffer()
 		IID_PPV_ARGS(&vertices[vertices.size() - 1].vertBuff));
 	if (FAILED(hr))
 	{
-		return EoF;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	vertices[vertices.size() - 1].vbView.BufferLocation = vertices[vertices.size() - 1].vertBuff->GetGPUVirtualAddress();
@@ -887,7 +894,7 @@ int DirectDrawing::CreateVertexAndIndexBuffer()
 		IID_PPV_ARGS(&vertices[vertices.size() - 1].indexBuff));
 	if (FAILED(hr))
 	{
-		return EoF;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	// GPU上のバッファに対応した仮想メモリを取得
@@ -956,6 +963,8 @@ HRESULT DirectDrawing::CreateConstBuffer(int* objIndex)
 {
 	HRESULT hr = S_FALSE;
 
+	static auto* dev = DirectXInit::GetDevice();
+
 	obj.push_back({});
 
 	hr = dev->CreateCommittedResource(
@@ -1006,11 +1015,12 @@ HRESULT DirectDrawing::CreateConstBuffer(int* objIndex)
 
 int DirectDrawing::CreateNullConstant(const XMFLOAT3& pos, const XMMATRIX& rota, const XMFLOAT3& scale)
 {
-	obj.push_back({});
-
 	using namespace DirectX;
 
+	static auto* dev = DirectXInit::GetDevice();
 	XMMATRIX rot = XMMatrixIdentity();
+
+	obj.push_back({});
 
 	obj[obj.size() - 1].position = pos;
 	obj[obj.size() - 1].rotation = rota;
@@ -1134,6 +1144,8 @@ int DirectDrawing::CreateSprite()
 	using namespace DirectX;
 
 	HRESULT hr = S_FALSE;
+	static auto* dev = DirectXInit::GetDevice();
+
 	sprite.push_back({});
 
 	static SpriteVertex vert[] = {
@@ -1153,7 +1165,7 @@ int DirectDrawing::CreateSprite()
 		IID_PPV_ARGS(&sprite[sprite.size() - 1].vertBuff));
 	if (FAILED(hr))
 	{
-		return EoF;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	// 頂点バッファへのデータ転送
@@ -1177,7 +1189,7 @@ int DirectDrawing::CreateSprite()
 		IID_PPV_ARGS(&sprite[sprite.size() - 1].constBuff));
 	if (FAILED(hr))
 	{
-		return EoF;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	// 定数バッファにデータ転送
@@ -1190,7 +1202,7 @@ int DirectDrawing::CreateSprite()
 	hr = BasicDescHeapInit();
 	if (FAILED(hr))
 	{
-		return EoF;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	return static_cast<int>(sprite.size() - 1);
@@ -1199,6 +1211,7 @@ int DirectDrawing::CreateSprite()
 HRESULT DirectDrawing::BasicDescHeapInit()
 {
 	HRESULT hr;
+	static auto* dev = DirectXInit::GetDevice();
 
 	if (isBasicDescHeapInit == true)
 	{
@@ -1222,7 +1235,7 @@ HRESULT DirectDrawing::BasicDescHeapInit()
 
 void DirectDrawing::BaseDrawGraphics()
 {
-	cmdList = DirectXInit::GetCommandList();
+	static auto* cmdList = DirectXInit::GetCommandList();
 
 	// ビューポート領域の設定
 	cmdList->RSSetViewports(
@@ -1249,7 +1262,7 @@ void DirectDrawing::BaseDrawGraphics()
 
 void DirectDrawing::BaseDrawSpriteGraphics()
 {
-	cmdList = DirectXInit::GetCommandList();
+	static auto* cmdList = DirectXInit::GetCommandList();
 
 	// ビューポート領域の設定
 	cmdList->RSSetViewports(
@@ -1284,7 +1297,7 @@ int DirectDrawing::SetDrawBlendMode(int blendMode)
 {
 	if (blendMode < BLENDMODE_NOBLEND || blendMode > BLENDMODE_INV)
 	{
-		return EoF;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	this->blendMode = blendMode;

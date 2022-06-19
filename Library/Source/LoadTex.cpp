@@ -1,4 +1,6 @@
 #include "./Header/LoadTex.h"
+#include "./Header/DirectXInit.h"
+
 #include "./Header/Error.h"
 
 TextrueCommon::TextrueCommon() :
@@ -31,6 +33,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 	using namespace Engine;
 
 	HRESULT hr = S_FALSE;
+	static auto* dev = DirectXInit::GetDevice();
 	CD3DX12_RESOURCE_DESC texResDesc{};
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{}; //設定構造体
 
@@ -46,7 +49,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		hr = dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&texCommonData.descHeap));
 		if (FAILED(hr))
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 	}
 
@@ -71,7 +74,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 
 		// テクスチャバッファにデータ転送
@@ -84,7 +87,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 
 		// デスクリプタヒープの先頭ハンドル(CPU)を取得
@@ -148,7 +151,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 
 		// テクスチャバッファにデータ転送
@@ -161,7 +164,7 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		);
 		if (FAILED(hr))
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 
 		// デスクリプタヒープの先頭ハンドル(CPU)を取得
@@ -209,18 +212,18 @@ int LoadTex::DrawTextureInit()
 	int size = 0;
 
 	size = CreateSprite();
-	if (size == functionError)
+	if (size == FUNCTION_ERROR)
 	{
-		return functionError;
+		return FUNCTION_ERROR;
 	}
 
 	if (isDrawTextrueInit == false)
 	{
 		isDrawTextrueInit = true;
 
-		if (LoadTextrue() == functionError)
+		if (LoadTextrue() == FUNCTION_ERROR)
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 	}
 
@@ -237,9 +240,10 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 	if ((graphHandle < 0 || (UINT)graphHandle > texCommonData.textrueCount) ||
 		(parent < -1 || (parent != -1 && (size_t)parent >= spriteIndex.size())))
 	{
-		return functionError;
+		return FUNCTION_ERROR;
 	}
 
+	static auto* cmdList = DirectXInit::GetCommandList();
 	bool isInit = false;
 
 	if ((size_t)(spriteCount + 1) < spriteIndex.size())
@@ -250,9 +254,9 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 	if (isInit == false)
 	{
 		int size = DrawTextureInit();
-		if (size == functionError)
+		if (size == FUNCTION_ERROR)
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 
 		spriteIndex.push_back({ size, graphHandle });
@@ -260,7 +264,7 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 
 	if (spriteIndex.size() == 0)
 	{
-		return functionError;
+		return FUNCTION_ERROR;
 	}
 
 	spriteCount++;
@@ -359,9 +363,10 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 	if ((graphHandle < 0 || (UINT)graphHandle > texCommonData.textrueCount) ||
 		(parent < -1 && (size_t)parent >= spriteIndex.size()))
 	{
-		return functionError;
+		return FUNCTION_ERROR;
 	}
 
+	static auto* cmdList = DirectXInit::GetCommandList();
 	bool isInit = false;
 
 	if ((size_t)(spriteCount + 1) < spriteIndex.size())
@@ -372,9 +377,9 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 	if (isInit == false)
 	{
 		int size = DrawTextureInit();
-		if (size == functionError)
+		if (size == FUNCTION_ERROR)
 		{
-			return functionError;
+			return FUNCTION_ERROR;
 		}
 
 		spriteIndex.push_back({ size, graphHandle });
@@ -382,7 +387,7 @@ int LoadTex::DrawCutTextrue(const float& posX, const float& posY, const float& w
 
 	if (spriteIndex.size() == 0)
 	{
-		return functionError;
+		return FUNCTION_ERROR;
 	}
 
 	spriteCount++;

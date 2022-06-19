@@ -514,6 +514,7 @@ int DrawPolygon::CreateOBJModel(const char* filePath, const char* directoryPath)
 	using XMFLOAT2 = DirectX::XMFLOAT2;
 	HRESULT hr;
 
+	static auto* dev = DirectXInit::GetDevice();
 	ifstream file;
 	const string modelPath = filePath;
 	file.open(modelPath);
@@ -1044,6 +1045,7 @@ int DrawPolygon::Draw(
 
 	using namespace DirectX;
 
+	static auto* cmdList = DirectXInit::GetCommandList();
 	bool isInit = false;
 	XMMATRIX mat = XMMatrixIdentity();
 
@@ -1250,6 +1252,8 @@ int DrawPolygon::DrawOBJ(const int& object, const XMFLOAT3& position, const XMMA
 #pragma region GraphicsCommand
 
 	BaseDrawGraphics();
+
+	static auto* cmdList = DirectXInit::GetCommandList();
 
 	cmdList->SetPipelineState(materialData[isDepthWriteBan].pipelinestate[blendMode].Get());
 	cmdList->SetGraphicsRootSignature(materialData[isDepthWriteBan].rootsignature.Get());

@@ -32,17 +32,6 @@ class LoadTex : public DirectDrawing
 protected:
 	using XMFLOAT4 = DirectX::XMFLOAT4;
 
-	/*メンバ変数*/
-protected:
-	static vector<Textrue> textrueData;
-	static TextrueCommon texCommonData;
-private:
-	UINT spriteCount;
-
-	// 関数の初期化フラグ
-	bool isLoadTextrueInit = false;
-	bool isDrawTextrueInit = false;
-
 	/*メンバ関数*/
 public:
 	LoadTex();
@@ -65,9 +54,20 @@ public:
 
 	// 内部の初期化用関数
 	void LoopEnd();
+
+	int DrawTextureInit();
 private:
 	// データの消去
 	void DataClear();
 
-	int DrawTextureInit();
+	/*メンバ変数*/
+protected:
+	static vector<Textrue> textrueData;
+	static TextrueCommon texCommonData;
+private:
+	UINT spriteCount;
+
+	// 関数の初期化フラグ
+	bool isLoadTextrueInit = false;
+	bool isDrawTextrueInit = false;
 };

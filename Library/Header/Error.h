@@ -6,7 +6,7 @@
 /*’è”*/
 namespace Engine
 {
-static constexpr int functionError = -1;
+static constexpr int FUNCTION_ERROR = -1;
 } // Engine
 
 /*ŠÖ”*/
