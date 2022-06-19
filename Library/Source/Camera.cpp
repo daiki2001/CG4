@@ -35,8 +35,8 @@ void Camera::Init()
 	matProjection[Projection::ORTHOGRAPHIC] =
 		XMMatrixOrthographicOffCenterLH(
 			0.0f,
-			DirectXInit::GetInstance()->windowWidth,
-			DirectXInit::GetInstance()->windowHeight,
+			static_cast<float>(DirectXInit::GetInstance()->windowWidth),
+			static_cast<float>(DirectXInit::GetInstance()->windowHeight),
 			0.0f,
 			0.0f,
 			1.0f
@@ -134,7 +134,7 @@ int Camera::ChangeCamera(const size_t& cameraNo)
 {
 	if (cameraNo < 0 || cameraNo >= matView.size())
 	{
-		return Engine::functionError;
+		return Engine::FUNCTION_ERROR;
 	}
 
 	Camera::cameraNo = cameraNo;

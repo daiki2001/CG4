@@ -193,6 +193,7 @@
     <ClInclude Include="Header\LoadTex.h" />
     <ClInclude Include="Header\Model.h" />
     <ClInclude Include="Header\Parameter.h" />
+    <ClInclude Include="Header\PostEffect.h" />
     <ClInclude Include="Header\SafeDelete.h" />
     <ClInclude Include="Header\SceneChenge.h" />
     <ClInclude Include="Header\SceneManager.h" />
@@ -234,6 +235,7 @@
     <ClCompile Include="Source\LoadTex.cpp" />
     <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\Parameter.cpp" />
+    <ClCompile Include="Source\PostEffect.cpp" />
     <ClCompile Include="Source\SceneManager.cpp" />
     <ClCompile Include="Source\Win32API.cpp" />
   </ItemGroup>

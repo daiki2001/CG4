@@ -11,7 +11,10 @@
 
 class DirectXInit final : public Win32API
 {
-private: //シングルトン化
+public: //シングルトン化
+	// インスタンスの取得
+	static DirectXInit* GetInstance();
+private:
 	// コンストラクタをprivateにする
 	DirectXInit();
 	// コピーコンストラクタを無効にする
@@ -20,9 +23,6 @@ private: //シングルトン化
 	~DirectXInit() {}
 	// 代入演算子を無効にする
 	DirectXInit operator=(const DirectXInit& obj) = delete;
-public:
-	// インスタンスの取得
-	static DirectXInit* GetInstance();
 
 protected: // エイリアス
 	// std::を省略
@@ -30,33 +30,15 @@ protected: // エイリアス
 	// Microsoft::WRL::を省略
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
+private: // 静的メンバ変数
+	static ComPtr<ID3D12Device> dev; //D3D12デバイス
+	static ComPtr<ID3D12GraphicsCommandList> cmdList; //コマンドリスト
+
 public: // 静的メンバ関数
 	// D3D12デバイスの取得
 	static ID3D12Device* GetDevice() { return dev.Get(); };
 	// コマンドリストの取得
 	static ID3D12GraphicsCommandList* GetCommandList() { return cmdList.Get(); };
-
-private: // 静的メンバ変数
-	static ComPtr<ID3D12Device> dev; //D3D12デバイス
-	static ComPtr<ID3D12GraphicsCommandList> cmdList; //コマンドリスト
-
-public: // メンバ関数
-	// 初期化
-	HRESULT Init();
-
-	// 描画前処理
-	void ClearScreen();
-	// 描画後処理
-	void ScreenFlip();
-
-	// ウィンドウサイズの設定
-	int SetWindowSize(int width, int height);
-private:
-	// デバッグレイヤー
-	void DebugLayer();
-
-	// 深度バッファの生成
-	HRESULT CreateDepthBuffer();
 
 public: // メンバ変数
 	float clearColor[4]; //背景色
@@ -90,4 +72,21 @@ private:
 
 	SIZE_T bbIndex; //バックバッファのインデックス
 
+public: // メンバ関数
+	// 初期化
+	HRESULT Init();
+
+	// 描画前処理
+	void ClearScreen();
+	// 描画後処理
+	void ScreenFlip();
+
+	// ウィンドウサイズの設定
+	int SetWindowSize(int width, int height);
+private:
+	// デバッグレイヤー
+	void DebugLayer();
+
+	// 深度バッファの生成
+	HRESULT CreateDepthBuffer();
 };

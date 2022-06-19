@@ -1,4 +1,5 @@
 #include "./Header/DebugText.h"
+#include "./Header/DirectXInit.h"
 
 /*static•Ï”‚Ì‰Šú‰»*/
 int DebugText::fontTex = -1;
@@ -61,6 +62,7 @@ HRESULT DebugText::DrawString(const float& posX, const float& posY,
 	using namespace DirectX;
 
 	HRESULT hr = S_FALSE;
+	static auto* cmdList = DirectXInit::GetCommandList();
 	static bool isDrawString = false;
 	static char* string = nullptr;
 	static char* numberString = static_cast<char*>(malloc(sizeof(char) * 21));

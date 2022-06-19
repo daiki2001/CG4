@@ -348,7 +348,6 @@ void Model::Finalize()
 HRESULT Model::CreateBuffers()
 {
 	using namespace Engine;
-
 	HRESULT hr = S_FALSE;
 
 #pragma region CreateVertexBuffer

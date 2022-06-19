@@ -25,8 +25,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int)
 	w->SetWindowSize(window_width, window_height);
 	w->Init();
 
-	DrawPolygon draw();
-
 	Camera::Init();
 	Input::Init();
 

@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "./Header/FbxLoader.h"
 #include "./Header/Model.h"
+#include "./Header/PostEffect.h"
 
 #include <memory>
 
@@ -26,9 +27,10 @@ public: // メンバ関数
 	void Draw() override;
 
 private: // メンバ変数
-	FbxLoader* fbxLoader;
-
 	int background; //背景画像
+
+	PostEffect postEffect;
+	FbxLoader* fbxLoader;
 
 	// オブジェクトの生成
 	int fbxModel; //FBXモデル

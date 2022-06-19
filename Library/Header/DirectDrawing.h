@@ -236,8 +236,6 @@ protected: // エイリアス
 public: // 静的メンバ変数
 	static bool isDepthWriteBan; //trueだったら、デプスに対しての上書き禁止
 protected:
-	static ID3D12Device* dev;                  //D3D12デバイス
-	static ID3D12GraphicsCommandList* cmdList; //コマンドリスト
 	static vector<Sprite> sprite;              //スプライトのデータ
 	static vector<IndexData> spriteIndex;      //スプライトのデータのインデックス
 
