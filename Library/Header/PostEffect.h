@@ -14,6 +14,8 @@ public: //メンバ変数
 	Matrix4 matWorld;        //ワールド行列
 	DirectX::XMFLOAT4 color; //色
 private:
+	ComPtr<ID3D12DescriptorHeap> descHeapSRV; //SRV用のデスクリプタヒープ
+
 	int graphHandle;
 	size_t spriteCount;
 

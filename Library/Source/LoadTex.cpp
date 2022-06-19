@@ -14,7 +14,7 @@ TextrueCommon::TextrueCommon() :
 }
 
 /*static変数の初期化*/
-DirectDrawing::vector<Textrue> LoadTex::textrueData = {};
+DirectDrawing::vector<Textrue> LoadTex::textrueData(1);
 TextrueCommon LoadTex::texCommonData = {};
 
 LoadTex::LoadTex() :
@@ -53,71 +53,6 @@ int LoadTex::LoadTextrue(const wchar_t* fileName)
 		}
 	}
 
-	if (textrueData.size() <= 0)
-	{
-		texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-			DXGI_FORMAT_R32G32B32A32_FLOAT,
-			1,
-			1,
-			1,
-			1
-		);
-
-		textrueData.push_back({});
-		hr = dev->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0),
-			D3D12_HEAP_FLAG_NONE,
-			&texResDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ, //テクスチャ用指定
-			nullptr,
-			IID_PPV_ARGS(&textrueData[0].texbuff)
-		);
-		if (FAILED(hr))
-		{
-			return FUNCTION_ERROR;
-		}
-
-		// テクスチャバッファにデータ転送
-		hr = textrueData[0].texbuff->WriteToSubresource(
-			0,
-			nullptr,                   //全領域へコピー
-			texCommonData.noneTextrue, //元データアドレス
-			sizeof(XMFLOAT4) * 1,      //1ラインサイズ
-			sizeof(XMFLOAT4) * 1       //全サイズ
-		);
-		if (FAILED(hr))
-		{
-			return FUNCTION_ERROR;
-		}
-
-		// デスクリプタヒープの先頭ハンドル(CPU)を取得
-		textrueData[textrueData.size() - 1].cpuDescHandle =
-			CD3DX12_CPU_DESCRIPTOR_HANDLE(
-				texCommonData.descHeap->GetCPUDescriptorHandleForHeapStart(),
-				(INT)(textrueData.size() - 1),
-				dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
-			);
-
-		// デスクリプタヒープの先頭ハンドル(GPU)を取得
-		textrueData[textrueData.size() - 1].gpuDescHandle =
-			CD3DX12_GPU_DESCRIPTOR_HANDLE(
-				texCommonData.descHeap->GetGPUDescriptorHandleForHeapStart(),
-				(INT)(textrueData.size() - 1),
-				dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
-			);
-
-		// シェーダリソースビュー設定
-		srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; //2Dテクスチャ
-		srvDesc.Texture2D.MipLevels = 1;
-
-		dev->CreateShaderResourceView(
-			textrueData[0].texbuff.Get(), //ビューと関連付けるバッファ
-			&srvDesc, //テクスチャ設定情報
-			textrueData[textrueData.size() - 1].cpuDescHandle
-		);
-	}
 	if (fileName != nullptr)
 	{
 		texCommonData.textrueCount++;
