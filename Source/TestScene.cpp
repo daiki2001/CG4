@@ -121,7 +121,7 @@ void TestScene::Draw()
 
 	DirectXInit* w = DirectXInit::GetInstance();
 
-	w->ClearScreen();
+	postEffect.PreDraw();
 	draw.SetDrawBlendMode(BLENDMODE_ALPHA);
 
 	// ”wŒi
@@ -136,9 +136,13 @@ void TestScene::Draw()
 	//);
 
 	//fbxLoader->GetModel(fbxModel)->Draw();
-	postEffect.Draw();
 
 	// ƒ‹[ƒv‚ÌI—¹ˆ—
 	draw.PolygonLoopEnd();
+
+	postEffect.PostDraw();
+
+	w->ClearScreen();
+	postEffect.Draw();
 	w->ScreenFlip();
 }

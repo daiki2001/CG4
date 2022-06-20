@@ -2,12 +2,18 @@
 #include "./Header/DirectXInit.h"
 #include "./Header/Error.h"
 
+const float PostEffect::shaderClearColor[4] = { 1.0f, 0.5f, 0.0f, 1.0f };
+
 PostEffect::PostEffect() :
 	LoadTex(),
 	position(0.0f, 0.0f, 0.0f),
 	angle(0.0f),
 	matWorld(Engine::Math::Identity()),
 	color(1.0f, 1.0f, 1.0f, 1.0f),
+	descHeapSRV{},
+	depthBuff{},
+	descHeapRTV{},
+	descHeapDSV{},
 	graphHandle(-1),
 	spriteCount(size_t(-1))
 {
@@ -74,7 +80,7 @@ int PostEffect::Init()
 		D3D12_HEAP_FLAG_NONE,
 		&texResDesc,
 		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, //テクスチャ用指定
-		nullptr,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, shaderClearColor),
 		IID_PPV_ARGS(&textrueData[0].texbuff)
 	);
 	if (FAILED(hr))
@@ -114,12 +120,12 @@ int PostEffect::Init()
 	}
 
 	// SRV用デスクリプタヒープを設定
-	D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
-	descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	descHeapDesc.NumDescriptors = 1;
+	D3D12_DESCRIPTOR_HEAP_DESC srvDescHeapDesc = {};
+	srvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	srvDescHeapDesc.NumDescriptors = 1;
 	// SRV用デスクリプタヒープを生成
-	hr = dev->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&descHeapSRV));
+	hr = dev->CreateDescriptorHeap(&srvDescHeapDesc, IID_PPV_ARGS(&descHeapSRV));
 	if (FAILED(hr))
 	{
 		return hr;
@@ -137,6 +143,71 @@ int PostEffect::Init()
 		textrueData[0].texbuff.Get(),
 		&srvDesc,
 		descHeapSRV->GetCPUDescriptorHandleForHeapStart()
+	);
+
+	// RTV用デスクリプタヒープを設定
+	D3D12_DESCRIPTOR_HEAP_DESC rtvDescHeapDesc = {};
+	rtvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvDescHeapDesc.NumDescriptors = 1;
+	// RTV用デスクリプタヒープを生成
+	hr = dev->CreateDescriptorHeap(&rtvDescHeapDesc, IID_PPV_ARGS(&descHeapRTV));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// レンダーターゲットビューの生成
+	dev->CreateRenderTargetView(
+		textrueData[0].texbuff.Get(),
+		nullptr,
+		descHeapRTV->GetCPUDescriptorHandleForHeapStart()
+	);
+
+	// リソース設定
+	CD3DX12_RESOURCE_DESC depthResDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+		DXGI_FORMAT_D32_FLOAT,
+		DirectXInit::GetInstance()->windowWidth,
+		DirectXInit::GetInstance()->windowHeight,
+		1,
+		0,
+		1,
+		0,
+		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
+	);
+
+	// リソース生成
+	hr = dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&depthResDesc,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE, //深度値書き込みに使用
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
+		IID_PPV_ARGS(&depthBuff)
+	);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// DSV用デスクリプタヒープ設定
+	D3D12_DESCRIPTOR_HEAP_DESC dsvDescHeapDesc = {};
+	dsvDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvDescHeapDesc.NumDescriptors = 1;
+	// DSV用デスクリプタヒープ作成
+	hr = dev->CreateDescriptorHeap(&dsvDescHeapDesc, IID_PPV_ARGS(&descHeapDSV));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// デスクリプタヒープにDSV作成
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; //深度値フォーマット
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dev->CreateDepthStencilView(
+		depthBuff.Get(),
+		&dsvDesc,
+		descHeapDSV->GetCPUDescriptorHandleForHeapStart()
 	);
 
 	return 0;
@@ -186,6 +257,46 @@ int PostEffect::Draw()
 		sprite[index.constant].constBuff->Unmap(0, nullptr);
 	}
 
+	cmdList->SetPipelineState(spriteData.pipelinestate[blendMode].Get());
+	cmdList->SetGraphicsRootSignature(spriteData.rootsignature.Get());
+
+	// プリミティブ形状の設定
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	// デスクリプタヒープをセット
+	ID3D12DescriptorHeap* ppHeaps[] = { descHeapSRV.Get() };
+	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+	// 定数バッファビューをセット
+	cmdList->SetGraphicsRootConstantBufferView(0, sprite[index.constant].constBuff->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootDescriptorTable(1, descHeapSRV->GetGPUDescriptorHandleForHeapStart());
+
+	// 頂点バッファの設定
+	cmdList->IASetVertexBuffers(0, 1, &sprite[index.constant].vbView);
+	// 描画コマンド
+	cmdList->DrawInstanced(4, 1, 0, 0);
+
+#pragma endregion
+
+	return index.constant;
+}
+
+int PostEffect::PreDraw()
+{
+	static auto* cmdList = DirectXInit::GetCommandList();
+
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		textrueData[0].texbuff.Get(),
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_STATE_RENDER_TARGET
+	));
+
+	// レンダーターゲットビュー用ディスクリプタヒープのハンドルを取得
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvH = descHeapRTV->GetCPUDescriptorHandleForHeapStart();
+	// 深度ステンシルビュー用ディスクリプタヒープのハンドルを取得
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvH = descHeapDSV->GetCPUDescriptorHandleForHeapStart();
+	// レンダーターゲットをセット
+	cmdList->OMSetRenderTargets(1, &rtvH, false, &dsvH);
+
 	// ビューポート領域の設定
 	cmdList->RSSetViewports(
 		1,
@@ -208,25 +319,22 @@ int PostEffect::Draw()
 		)
 	);
 
-	cmdList->SetPipelineState(spriteData.pipelinestate[blendMode].Get());
-	cmdList->SetGraphicsRootSignature(spriteData.rootsignature.Get());
+	// 画面クリア
+	cmdList->ClearRenderTargetView(rtvH, shaderClearColor, 0, nullptr);
+	cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	// プリミティブ形状の設定
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	// デスクリプタヒープをセット
-	ID3D12DescriptorHeap* ppHeaps[] = { descHeapSRV.Get() };
-	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	return 0;
+}
 
-	// 定数バッファビューをセット
-	cmdList->SetGraphicsRootConstantBufferView(0, sprite[index.constant].constBuff->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootDescriptorTable(1, descHeapSRV->GetGPUDescriptorHandleForHeapStart());
+int PostEffect::PostDraw()
+{
+	static auto* cmdList = DirectXInit::GetCommandList();
 
-	// 頂点バッファの設定
-	cmdList->IASetVertexBuffers(0, 1, &sprite[index.constant].vbView);
-	// 描画コマンド
-	cmdList->DrawInstanced(4, 1, 0, 0);
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		textrueData[0].texbuff.Get(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+	));
 
-#pragma endregion
-
-	return index.constant;
+	return 0;
 }
