@@ -124,25 +124,23 @@ void TestScene::Draw()
 	postEffect.PreDraw();
 	draw.SetDrawBlendMode(BLENDMODE_ALPHA);
 
-	// 背景
-	//draw.DrawTextrue(
-	//	0.0f,
-	//	0.0f,
-	//	(float)w->windowWidth,
-	//	(float)w->windowHeight,
-	//	0.0f,
-	//	background,
-	//	XMFLOAT2(0.0f, 0.0f)
-	//);
-
-	//fbxLoader->GetModel(fbxModel)->Draw();
-
-	// ループの終了処理
-	draw.PolygonLoopEnd();
+	fbxLoader->GetModel(fbxModel)->Draw();
 
 	postEffect.PostDraw();
 
 	w->ClearScreen();
+	// 背景
+	draw.DrawTextrue(
+		static_cast<float>(w->windowWidth) / 2.0f,
+		static_cast<float>(w->windowHeight) / 2.0f,
+		static_cast<float>(w->windowWidth),
+		static_cast<float>(w->windowHeight),
+		0.0f,
+		background
+	);
 	postEffect.Draw();
 	w->ScreenFlip();
+
+	// ループの終了処理
+	draw.PolygonLoopEnd();
 }

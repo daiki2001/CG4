@@ -264,11 +264,14 @@ int LoadTex::DrawTextrue(const float& posX, const float& posY, const float& widt
 	}
 
 	SpriteConstBufferData* constMap = nullptr;
-	sprite[index.constant].constBuff->Map(0, nullptr, (void**)&constMap);
-	constMap->color = sprite[index.constant].color;
-	constMap->mat = sprite[index.constant].matWorld *
-		spriteData.matProjection[CommonData::Projection::ORTHOGRAPHIC];
-	sprite[index.constant].constBuff->Unmap(0, nullptr);
+	HRESULT hr = sprite[index.constant].constBuff->Map(0, nullptr, (void**)&constMap);
+	if (SUCCEEDED(hr))
+	{
+		constMap->color = sprite[index.constant].color;
+		constMap->mat = sprite[index.constant].matWorld *
+			spriteData.matProjection[CommonData::Projection::ORTHOGRAPHIC];
+		sprite[index.constant].constBuff->Unmap(0, nullptr);
+	}
 
 	// デスクリプタヒープをセット
 	ID3D12DescriptorHeap* ppHeaps[] = { texCommonData.descHeap.Get() };

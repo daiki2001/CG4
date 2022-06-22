@@ -1199,11 +1199,11 @@ int DirectDrawing::CreateSprite()
 	constMap->mat = spriteData.matProjection[CommonData::Projection::ORTHOGRAPHIC]; //•½s“Š‰es—ñ
 	sprite[sprite.size() - 1].constBuff->Unmap(0, nullptr);
 
-	hr = BasicDescHeapInit();
-	if (FAILED(hr))
-	{
-		return Engine::FUNCTION_ERROR;
-	}
+	//hr = BasicDescHeapInit();
+	//if (FAILED(hr))
+	//{
+	//	return Engine::FUNCTION_ERROR;
+	//}
 
 	return static_cast<int>(sprite.size() - 1);
 }

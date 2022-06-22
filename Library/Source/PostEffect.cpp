@@ -2,7 +2,7 @@
 #include "./Header/DirectXInit.h"
 #include "./Header/Error.h"
 
-const float PostEffect::shaderClearColor[4] = { 1.0f, 0.5f, 0.0f, 1.0f };
+const float PostEffect::clearColor[4] = { 1.0f, 0.5f, 0.0f, 0.0f };
 
 PostEffect::PostEffect() :
 	LoadTex(),
@@ -10,12 +10,14 @@ PostEffect::PostEffect() :
 	angle(0.0f),
 	matWorld(Engine::Math::Identity()),
 	color(1.0f, 1.0f, 1.0f, 1.0f),
+	vertBuff{},
+	vbView{},
+	constBuff{},
+	texBuff{},
 	descHeapSRV{},
-	depthBuff{},
 	descHeapRTV{},
-	descHeapDSV{},
-	graphHandle(-1),
-	spriteCount(size_t(-1))
+	depthBuff{},
+	descHeapDSV{}
 {
 }
 
@@ -24,99 +26,26 @@ int PostEffect::Init()
 	using namespace Engine;
 
 	HRESULT hr = S_FALSE;
-
-	int size = CreateSprite();
-	if (size == FUNCTION_ERROR)
-	{
-		return FUNCTION_ERROR;
-	}
-
-	spriteIndex.push_back({ size, 0 });
-	spriteCount = spriteIndex.size() - 1;
-
-	enum Corner { LB, LT, RB, RT };
-
-	SpriteVertex vert[] = {
-		{{}, { 0.0f, 1.0f }},
-		{{}, { 0.0f, 0.0f }},
-		{{}, { 1.0f, 1.0f }},
-		{{}, { 1.0f, 0.0f }},
-	};
-
-	float left = 0.0f;
-	float right = 100.0f;
-	float top = 0.0f;
-	float bottom = 100.0f;
-
-	vert[LB].pos = { left, bottom, 0.0f };
-	vert[LT].pos = { left, top, 0.0f };
-	vert[RB].pos = { right, bottom, 0.0f };
-	vert[RT].pos = { right, top, 0.0f };
-
-	// 頂点バッファへのデータ転送
-	SpriteVertex* vertexMap = nullptr;
-	sprite[spriteIndex[spriteCount].constant].vertBuff->Map(0, nullptr, (void**)&vertexMap);
-	memcpy(vertexMap, vert, sizeof(vert));
-	sprite[spriteIndex[spriteCount].constant].vertBuff->Unmap(0, nullptr);
-
-	// テクスチャリソース設定
-	D3D12_RESOURCE_DESC texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-		DXGI_FORMAT_R8G8B8A8_UNORM,
-		static_cast<UINT64>(DirectXInit::GetInstance()->windowWidth),
-		static_cast<UINT>(DirectXInit::GetInstance()->windowHeight),
-		1,
-		0,
-		1,
-		0,
-		D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
-	);
-
+	DirectXInit* w = DirectXInit::GetInstance();
 	auto* dev = DirectXInit::GetDevice();
 
-	// テクスチャバッファの生成
-	hr = dev->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
-								 D3D12_MEMORY_POOL_L0),
-		D3D12_HEAP_FLAG_NONE,
-		&texResDesc,
-		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, //テクスチャ用指定
-		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, shaderClearColor),
-		IID_PPV_ARGS(&textrueData[0].texbuff)
-	);
+	hr = CreateVertexBuffer();
 	if (FAILED(hr))
 	{
-		return FUNCTION_ERROR;
+		return Engine::FUNCTION_ERROR;
 	}
 
-	// テクスチャを赤クリア
+	// 定数バッファの生成
+	hr = CreateConstantBuffer();
+	if (FAILED(hr))
 	{
-		// 画素数
-		const UINT pixleCount = DirectXInit::GetInstance()->windowWidth *
-			DirectXInit::GetInstance()->windowHeight;
-		// 画像1行分のデータサイズ
-		const UINT rowPitch = sizeof(UINT) * DirectXInit::GetInstance()->windowWidth;
-		// 画像全体のデータサイズ
-		const UINT depthPitch = rowPitch * DirectXInit::GetInstance()->windowHeight;
-		// 画像イメージ
-		UINT* img = new UINT[pixleCount];
-		for (UINT i = 0; i < pixleCount; i++)
-		{
-			img[i] = 0xff0000ff;
-		}
+		return Engine::FUNCTION_ERROR;
+	}
 
-		// テクスチャバッファにデータ転送
-		hr = textrueData[0].texbuff->WriteToSubresource(
-			0,
-			nullptr,
-			img,
-			rowPitch,
-			depthPitch
-		);
-		if (FAILED(hr))
-		{
-			return hr;
-		}
-		delete[] img;
+	hr = CreateRenderTextrue();
+	if (FAILED(hr))
+	{
+		return hr;
 	}
 
 	// SRV用デスクリプタヒープを設定
@@ -133,14 +62,14 @@ int PostEffect::Init()
 
 	// シェーダーリソースビューの作成
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = textrueData[0].texbuff->GetDesc().Format;
+	srvDesc.Format = texBuff->GetDesc().Format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
 	// デスクリプタヒープにSRV作成
 	dev->CreateShaderResourceView(
-		textrueData[0].texbuff.Get(),
+		texBuff.Get(),
 		&srvDesc,
 		descHeapSRV->GetCPUDescriptorHandleForHeapStart()
 	);
@@ -158,7 +87,7 @@ int PostEffect::Init()
 
 	// レンダーターゲットビューの生成
 	dev->CreateRenderTargetView(
-		textrueData[0].texbuff.Get(),
+		texBuff.Get(),
 		nullptr,
 		descHeapRTV->GetCPUDescriptorHandleForHeapStart()
 	);
@@ -166,8 +95,8 @@ int PostEffect::Init()
 	// リソース設定
 	CD3DX12_RESOURCE_DESC depthResDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		DXGI_FORMAT_D32_FLOAT,
-		DirectXInit::GetInstance()->windowWidth,
-		DirectXInit::GetInstance()->windowHeight,
+		w->windowWidth,
+		w->windowHeight,
 		1,
 		0,
 		1,
@@ -226,35 +155,15 @@ int PostEffect::Draw()
 		isInit = true;
 	}
 
-	if (spriteIndex.size() == 0)
-	{
-		return FUNCTION_ERROR;
-	}
-
 #pragma region GraphicsCommand
 
-	IndexData& index = spriteIndex[spriteCount];
-
-	matWorld = Math::Identity();
-	matWorld *=Math::rotateZ(angle * Math::degree);
-	matWorld *= Math::translate(Vector3(
-		sprite[index.constant].pos.x,
-		sprite[index.constant].pos.y,
-		0.0f
-	));
-
-	//if (parent != -1)
-	//{
-	//	sprite[index.constant].matWorld *= sprite[parent].matWorld;
-	//}
-
 	SpriteConstBufferData* constMap = nullptr;
-	HRESULT hr = sprite[index.constant].constBuff->Map(0, nullptr, (void**)&constMap);
+	HRESULT hr = constBuff->Map(0, nullptr, (void**)&constMap);
 	if (SUCCEEDED(hr))
 	{
 		constMap->color = color;
-		constMap->mat = matWorld * spriteData.matProjection[CommonData::Projection::ORTHOGRAPHIC];
-		sprite[index.constant].constBuff->Unmap(0, nullptr);
+		constMap->mat = Math::Identity();
+		constBuff->Unmap(0, nullptr);
 	}
 
 	cmdList->SetPipelineState(spriteData.pipelinestate[blendMode].Get());
@@ -267,25 +176,27 @@ int PostEffect::Draw()
 	cmdList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 	// 定数バッファビューをセット
-	cmdList->SetGraphicsRootConstantBufferView(0, sprite[index.constant].constBuff->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(0, constBuff->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootDescriptorTable(1, descHeapSRV->GetGPUDescriptorHandleForHeapStart());
 
 	// 頂点バッファの設定
-	cmdList->IASetVertexBuffers(0, 1, &sprite[index.constant].vbView);
+	cmdList->IASetVertexBuffers(0, 1, &vbView);
 	// 描画コマンド
 	cmdList->DrawInstanced(4, 1, 0, 0);
 
 #pragma endregion
 
-	return index.constant;
+	return hr;
 }
 
 int PostEffect::PreDraw()
 {
 	static auto* cmdList = DirectXInit::GetCommandList();
 
+	DirectXInit* w = DirectXInit::GetInstance();
+
 	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-		textrueData[0].texbuff.Get(),
+		texBuff.Get(),
 		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 		D3D12_RESOURCE_STATE_RENDER_TARGET
 	));
@@ -303,8 +214,8 @@ int PostEffect::PreDraw()
 		&CD3DX12_VIEWPORT(
 			0.0f,
 			0.0f,
-			static_cast<float>(DirectXInit::GetInstance()->windowWidth),
-			static_cast<float>(DirectXInit::GetInstance()->windowHeight)
+			static_cast<float>(w->windowWidth),
+			static_cast<float>(w->windowHeight)
 		)
 	);
 
@@ -314,13 +225,13 @@ int PostEffect::PreDraw()
 		&CD3DX12_RECT(
 			0,
 			0,
-			DirectXInit::GetInstance()->windowWidth,
-			DirectXInit::GetInstance()->windowHeight
+			w->windowWidth,
+			w->windowHeight
 		)
 	);
 
 	// 画面クリア
-	cmdList->ClearRenderTargetView(rtvH, shaderClearColor, 0, nullptr);
+	cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 	cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	return 0;
@@ -331,10 +242,151 @@ int PostEffect::PostDraw()
 	static auto* cmdList = DirectXInit::GetCommandList();
 
 	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-		textrueData[0].texbuff.Get(),
+		texBuff.Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET,
 		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
 	));
 
 	return 0;
+}
+
+HRESULT PostEffect::CreateVertexBuffer()
+{
+	HRESULT hr = S_FALSE;
+	auto* dev = DirectXInit::GetDevice();
+
+	SpriteVertex vert[] = {
+		{{ -0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f }},
+		{{ -0.5f, +0.5f, 0.0f }, { 0.0f, 0.0f }},
+		{{ +0.5f, -0.5f, 0.0f }, { 1.0f, 1.0f }},
+		{{ +0.5f, +0.5f, 0.0f }, { 1.0f, 0.0f }},
+	};
+
+	// 頂点バッファの生成
+	hr = dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(sizeof(vert)),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&vertBuff));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// 頂点バッファへのデータ転送
+	SpriteVertex* vertexMap = nullptr;
+	hr = vertBuff->Map(0, nullptr, (void**)&vertexMap);
+	if (SUCCEEDED(hr))
+	{
+		memcpy(vertexMap, vert, sizeof(vert));
+		vertBuff->Unmap(0, nullptr);
+	}
+
+	// 頂点バッファビューの生成
+	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
+	vbView.SizeInBytes = sizeof(vert);
+	vbView.StrideInBytes = sizeof(SpriteVertex);
+
+	return hr;
+}
+
+HRESULT PostEffect::CreateConstantBuffer()
+{
+	HRESULT hr = S_FALSE;
+	auto* dev = DirectXInit::GetDevice();
+
+	// 定数バッファの生成
+	hr = dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), //アップロード可能
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstBufferData) + 0xFF) & ~0xFF), //リソース設定
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&constBuff));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// 定数バッファにデータ転送
+	SpriteConstBufferData* constMap = nullptr;
+	hr = constBuff->Map(0, nullptr, (void**)&constMap);
+	if (SUCCEEDED(hr))
+	{
+		constMap->color = color;
+		constMap->mat = Engine::Math::Identity();
+		constBuff->Unmap(0, nullptr);
+	}
+
+	return hr;
+}
+
+HRESULT PostEffect::CreateRenderTextrue()
+{
+	using namespace Engine;
+
+	HRESULT hr = S_FALSE;
+	DirectXInit* w = DirectXInit::GetInstance();
+	auto* dev = DirectXInit::GetDevice();
+
+	// テクスチャリソース設定
+	D3D12_RESOURCE_DESC texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+		DXGI_FORMAT_R8G8B8A8_UNORM,
+		static_cast<UINT64>(w->windowWidth),
+		static_cast<UINT>(w->windowHeight),
+		1,
+		0,
+		1,
+		0,
+		D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET
+	);
+
+	// テクスチャバッファの生成
+	hr = dev->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
+								 D3D12_MEMORY_POOL_L0),
+		D3D12_HEAP_FLAG_NONE,
+		&texResDesc,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, //テクスチャ用指定
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, clearColor),
+		IID_PPV_ARGS(&texBuff)
+	);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// テクスチャを赤クリア
+	//{
+	//	// 画素数
+	//	const UINT pixleCount = w->windowWidth * w->windowHeight;
+	//	// 画像1行分のデータサイズ
+	//	const UINT rowPitch = sizeof(UINT) * w->windowWidth;
+	//	// 画像全体のデータサイズ
+	//	const UINT depthPitch = rowPitch * w->windowHeight;
+	//	// 画像イメージ
+	//	UINT* img = new UINT[pixleCount];
+	//	for (UINT i = 0; i < pixleCount; i++)
+	//	{
+	//		img[i] = 0xff0000ff;
+	//	}
+
+	//	// テクスチャバッファにデータ転送
+	//	hr = texBuff->WriteToSubresource(
+	//		0,
+	//		nullptr,
+	//		img,
+	//		rowPitch,
+	//		depthPitch
+	//	);
+	//	if (FAILED(hr))
+	//	{
+	//		return hr;
+	//	}
+	//	delete[] img;
+	//}
+
+	return hr;
 }
