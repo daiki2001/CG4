@@ -1,50 +1,55 @@
-#pragma once
-#include "LoadTex.h"
+ï»¿#pragma once
 #include "./Math/EngineMath.h"
+#include <d3d12.h>
+#include <wrl.h>
 
-class PostEffect : public LoadTex
+class PostEffect
 {
-private: //ƒGƒCƒŠƒAƒX
+private: //ã‚¨ã‚¤ãƒªã‚¢ã‚¹
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 	using Vector3 = Engine::Math::Vector3;
 	using Matrix4 = Engine::Math::Matrix4;
 	
-private: //’è”
+private: //å®šæ•°
 	static const float clearColor[4];
 	
-public: //ƒƒ“ƒo•Ï”
-	Vector3 position;        //À•W
-	float angle;             //‰ñ“]Šp“x
-	Matrix4 matWorld;        //ƒ[ƒ‹ƒhs—ñ
-	DirectX::XMFLOAT4 color; //F
+public: //ãƒ¡ãƒ³ãƒå¤‰æ•°
+	Vector3 position;        //åº§æ¨™
+	float angle;             //å›è»¢è§’åº¦
+	Matrix4 matWorld;        //ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—
+	DirectX::XMFLOAT4 color; //è‰²
 private:
-	ComPtr<ID3D12Resource> vertBuff;          //’¸“_ƒoƒbƒtƒ@
-	D3D12_VERTEX_BUFFER_VIEW vbView;          //’¸“_ƒoƒbƒtƒ@ƒrƒ…[
-	ComPtr<ID3D12Resource> constBuff;         //’è”ƒoƒbƒtƒ@
-	ComPtr<ID3D12Resource> texBuff;           //ƒeƒNƒXƒ`ƒƒƒoƒbƒtƒ@
-	ComPtr<ID3D12DescriptorHeap> descHeapSRV; //SRV—p‚ÌƒfƒXƒNƒŠƒvƒ^ƒq[ƒv
-	ComPtr<ID3D12DescriptorHeap> descHeapRTV; //RTV—p‚ÌƒfƒXƒNƒŠƒvƒ^ƒq[ƒv
-	ComPtr<ID3D12Resource> depthBuff;         //[“xƒoƒbƒtƒ@
-	ComPtr<ID3D12DescriptorHeap> descHeapDSV; //DSV—p‚ÌƒfƒXƒNƒŠƒvƒ^ƒq[ƒv
+	ComPtr<ID3D12PipelineState> pipelineState; //ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³
+	ComPtr<ID3D12RootSignature> rootSignature; //ãƒ«ãƒ¼ãƒˆã‚·ã‚°ãƒãƒãƒ£
+	ComPtr<ID3D12Resource> vertBuff;           //é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
+	D3D12_VERTEX_BUFFER_VIEW vbView;           //é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ãƒ“ãƒ¥ãƒ¼
+	ComPtr<ID3D12Resource> constBuff;          //å®šæ•°ãƒãƒƒãƒ•ã‚¡
+	ComPtr<ID3D12Resource> texBuff;            //ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒãƒƒãƒ•ã‚¡
+	ComPtr<ID3D12DescriptorHeap> descHeapSRV;  //SRVç”¨ã®ãƒ‡ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ’ãƒ¼ãƒ—
+	ComPtr<ID3D12DescriptorHeap> descHeapRTV;  //RTVç”¨ã®ãƒ‡ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ’ãƒ¼ãƒ—
+	ComPtr<ID3D12Resource> depthBuff;          //æ·±åº¦ãƒãƒƒãƒ•ã‚¡
+	ComPtr<ID3D12DescriptorHeap> descHeapDSV;  //DSVç”¨ã®ãƒ‡ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ’ãƒ¼ãƒ—
 
-public: //ƒƒ“ƒoŠÖ”
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+public: //ãƒ¡ãƒ³ãƒé–¢æ•°
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	PostEffect();
 
-	// ‰Šú‰»ˆ—
+	// åˆæœŸåŒ–å‡¦ç†
 	int Init();
-	// •`‰æˆ—
+	// æç”»å‡¦ç†
 	int Draw();
 
-	// •`‰æ‘Oˆ—
+	// æç”»å‰å‡¦ç†
 	int PreDraw();
-	// •`‰æŒãˆ—
+	// æç”»å¾Œå‡¦ç†
 	int PostDraw();
 private:
-	// ’¸“_ƒoƒbƒtƒ@‚Ì¶¬
+	// ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³ã®ç”Ÿæˆ
+	HRESULT CreateGraphicsPipelineState();
+	// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆ
 	HRESULT CreateVertexBuffer();
-	// ’è”ƒoƒbƒtƒ@‚Ì¶¬
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆ
 	HRESULT CreateConstantBuffer();
-	// ƒŒƒ“ƒ_[ƒeƒNƒXƒ`ƒƒ‚Ì¶¬
+	// ãƒ¬ãƒ³ãƒ€ãƒ¼ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ç”Ÿæˆ
 	HRESULT CreateRenderTextrue();
 };

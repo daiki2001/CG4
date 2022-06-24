@@ -1,4 +1,4 @@
-#include "./Header/TestScene.h"
+ï»¿#include "./Header/TestScene.h"
 #include "./Header/DirectXInit.h"
 #include "./Header/Input.h"
 #include "./Header/Camera.h"
@@ -30,7 +30,7 @@ void TestScene::Init()
 	fbxModel = fbxLoader->LoadModelFromFile("./Resources/boneTest.fbx");
 	fbxLoader->GetModel(fbxModel)->Init();
 
-	// ‰æ‘œ‚Ì“Ç‚İ‚İ
+	// ç”»åƒã®èª­ã¿è¾¼ã¿
 	background = draw.LoadTextrue(L"./Resources/background.png");
 
 	Camera::targetRadius = 10.0f;
@@ -129,18 +129,20 @@ void TestScene::Draw()
 	postEffect.PostDraw();
 
 	w->ClearScreen();
-	// ”wŒi
+	// èƒŒæ™¯
 	draw.DrawTextrue(
-		static_cast<float>(w->windowWidth) / 2.0f,
-		static_cast<float>(w->windowHeight) / 2.0f,
+		0.0f,
+		0.0f,
 		static_cast<float>(w->windowWidth),
 		static_cast<float>(w->windowHeight),
 		0.0f,
-		background
+		background,
+		XMFLOAT2(0.0f, 0.0f)
 	);
+
 	postEffect.Draw();
 	w->ScreenFlip();
 
-	// ƒ‹[ƒv‚ÌI—¹ˆ—
+	// ãƒ«ãƒ¼ãƒ—ã®çµ‚äº†å‡¦ç†
 	draw.PolygonLoopEnd();
 }

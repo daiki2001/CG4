@@ -25,6 +25,21 @@
       <Extensions>
       </Extensions>
     </Filter>
+    <Filter Include="シェーダファイル\FBX">
+      <UniqueIdentifier>{583dcae3-48f8-4f1a-a321-9144023a2296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダファイル\PostEffectTest">
+      <UniqueIdentifier>{56ea5020-189e-487b-825d-572d865b6ad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダファイル\Sprite">
+      <UniqueIdentifier>{1cee1d2c-cf41-49e3-b418-c53c5a1a8435}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダファイル\Object">
+      <UniqueIdentifier>{96d16df7-cd74-4f93-a34f-2a69242982a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="シェーダファイル\Material">
+      <UniqueIdentifier>{14e17682-542a-4fe7-ae3d-e9044c260493}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\DirectDrawing.h">
@@ -210,40 +225,49 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\lib\Shaders\ObjectData.hlsli">
-      <Filter>シェーダファイル</Filter>
+    <None Include="..\lib\Shaders\FBX.hlsli">
+      <Filter>シェーダファイル\FBX</Filter>
+    </None>
+    <None Include="..\lib\Shaders\PostEffectTest.hlsli">
+      <Filter>シェーダファイル\PostEffectTest</Filter>
     </None>
     <None Include="..\lib\Shaders\SpriteData.hlsli">
-      <Filter>シェーダファイル</Filter>
+      <Filter>シェーダファイル\Sprite</Filter>
     </None>
-    <None Include="..\lib\Shaders\FBX.hlsli">
-      <Filter>シェーダファイル</Filter>
+    <None Include="..\lib\Shaders\ObjectData.hlsli">
+      <Filter>シェーダファイル\Object</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\lib\Shaders\ObjectPS.hlsl">
-      <Filter>シェーダファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="..\lib\Shaders\ObjectVS.hlsl">
-      <Filter>シェーダファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="..\lib\Shaders\SpritePS.hlsl">
-      <Filter>シェーダファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="..\lib\Shaders\SpriteVS.hlsl">
-      <Filter>シェーダファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="..\lib\Shaders\MaterialPS.hlsl">
-      <Filter>シェーダファイル</Filter>
-    </FxCompile>
-    <FxCompile Include="..\lib\Shaders\MaterialVS.hlsl">
-      <Filter>シェーダファイル</Filter>
-    </FxCompile>
     <FxCompile Include="..\lib\Shaders\FBXPS.hlsl">
-      <Filter>シェーダファイル</Filter>
+      <Filter>シェーダファイル\FBX</Filter>
     </FxCompile>
     <FxCompile Include="..\lib\Shaders\FBXVS.hlsl">
-      <Filter>シェーダファイル</Filter>
+      <Filter>シェーダファイル\FBX</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\PostEffectTestPS.hlsl">
+      <Filter>シェーダファイル\PostEffectTest</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\PostEffectTestVS.hlsl">
+      <Filter>シェーダファイル\PostEffectTest</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\SpritePS.hlsl">
+      <Filter>シェーダファイル\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\SpriteVS.hlsl">
+      <Filter>シェーダファイル\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\ObjectPS.hlsl">
+      <Filter>シェーダファイル\Object</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\ObjectVS.hlsl">
+      <Filter>シェーダファイル\Object</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\MaterialVS.hlsl">
+      <Filter>シェーダファイル\Material</Filter>
+    </FxCompile>
+    <FxCompile Include="..\lib\Shaders\MaterialPS.hlsl">
+      <Filter>シェーダファイル\Material</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
