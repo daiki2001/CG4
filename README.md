@@ -5,3 +5,4 @@
 >3. [ポストエフェクト](https://github.com/daiki2001/CG4/issues/3)
 >4. ~~PBR~~
 >5. [gitとReadmeの更新](https://github.com/daiki2001/CG4/issues/7)
+>6. [libファイル化](https://github.com/daiki2001/CG4/issues/8)
