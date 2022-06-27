@@ -1,10 +1,18 @@
 #include "FBX.hlsli"
 
+struct PSOutput
+{
+	float4 target0 : SV_Target0;
+	float4 target1 : SV_Target1;
+};
+
 Texture2D<float4> tex : register(t0);
 SamplerState smp : register(s0);
 
-float4 main(VSOutput input) : SV_Target
+PSOutput main(VSOutput input)
 {
+	PSOutput output;
+
 	// テクスチャマッピング
 	float4 texColor = tex.Sample(smp, input.uv);
 	// Lambert反射
@@ -13,6 +21,7 @@ float4 main(VSOutput input) : SV_Target
 	float  brightNess = diffuse + 0.3f;
 	float4 shadeColor = float4(brightNess, brightNess, brightNess, 1.0f);
 
-	return shadeColor + texColor;
-	// return float4(1.0f, 1.0f, 1.0f, 1.0f);
+	output.target0 = shadeColor + texColor;
+	output.target1 = float4(1 -(shadeColor + texColor).rgb, 1);
+	return output;
 }
